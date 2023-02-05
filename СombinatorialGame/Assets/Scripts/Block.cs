@@ -8,6 +8,7 @@ public class Block : MonoBehaviour
     [SerializeField] private SpriteRenderer _render;
     [SerializeField] private TextMeshPro _text;
     public int value;
+    public Node node;
 
     public Vector2 Pos => transform.position;
 
@@ -16,5 +17,12 @@ public class Block : MonoBehaviour
         value = type.value;
         _render.color = type.color;
         _text.text = type.value.ToString();
+    }
+
+    public void SetBlock(Node newNode)
+    {
+        if(node != null) { node.occupiedBlock = null; }
+        node = newNode;
+        node.occupiedBlock = this;
     }
 }

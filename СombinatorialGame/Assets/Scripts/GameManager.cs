@@ -28,10 +28,12 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (_state != GameState.WatingInput) { return; }
+        //if (_state != GameState.WatingInput) { return; }
 
         if (Input.GetKeyDown(KeyCode.RightArrow)) { Shift(Vector2.left); }
         if (Input.GetKeyDown(KeyCode.LeftArrow))  {Shift(Vector2.right); }
+        if (Input.GetKeyDown(KeyCode.UpArrow)) {Shift(Vector2.up); }
+        if (Input.GetKeyDown(KeyCode.DownArrow)) { Shift(Vector2.down); }
 
     }
 
@@ -87,6 +89,7 @@ public class GameManager : MonoBehaviour
         {
             var block = Instantiate(_blockPrefab, node.Pos, Quaternion.identity);
             block.Init(GetBlockTypeValue(UnityEngine.Random.value > 0.8f ? 4 : 2)); // !!!
+            block.SetBlock(node);
             _blocksList.Add(block);
         }
 
@@ -100,7 +103,30 @@ public class GameManager : MonoBehaviour
 
     private void Shift(Vector2 direction)
     {
-        var orderdBlocks = _blocksList.OrderBy(b => b.Pos.x).ThenBy(b => b.Pos.y);
+        var orderedBlocks = _blocksList.OrderBy(b => b.Pos.x).ThenBy(b => b.Pos.y).ToList();
+        if (direction == Vector2.right || direction == Vector2.up) { orderedBlocks.Reverse(); }
+
+        foreach (var block in orderedBlocks)
+        {
+            var next = block.node;
+            do
+            {
+                block.SetBlock(next);
+
+                var possibleNode = GetNodeAtPosition(next.Pos + direction);
+                if (possibleNode != null)
+                {
+                    if (possibleNode.occupiedBlock == null) { next = possibleNode; }
+                }
+            } while (next != block.node);
+
+            block.transform.position = block.node.Pos;
+        }
+    }
+
+    public Node GetNodeAtPosition(Vector2 pos)
+    {
+        return _nodesList.FirstOrDefault(n => n.Pos == pos);
     }
 }
 
