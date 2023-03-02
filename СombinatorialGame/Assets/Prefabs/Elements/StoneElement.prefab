@@ -119,7 +119,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   node: {fileID: 0}
-  mobile: 1
+  mobile: 100
   mergingBlock: {fileID: 0}
   orderElement: 1
   type: 3

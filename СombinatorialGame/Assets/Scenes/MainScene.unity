@@ -166,7 +166,7 @@ MonoBehaviour:
   _collision: {fileID: 639512021}
   _playerStartPosition: {x: 0, y: 0}
   _elementsPerStroke: 1
-  _strokeLag: 0.1
+  _strokeLag: 1
   _startElementCount: 2
   _maxOrederElenet: 2
   _state: 0

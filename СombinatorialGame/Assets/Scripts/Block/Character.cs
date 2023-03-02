@@ -7,6 +7,7 @@ public class Character : Block
     [SerializeField] protected Animator animator;
     [SerializeField] protected int hp;
     [SerializeField] protected GameManager manager;
+    protected bool shield;
 
     public override void Init(GameManager manager)
     {
@@ -14,9 +15,13 @@ public class Character : Block
         // характеристики заложены, или выставляются руками?
     }
 
+    public int HP => hp;
+    public bool Shield => shield;
+
     public virtual void SubtractHP(int hp)
     {
-        if (this.hp - hp > 0)
+        if(shield == true) { ShieldOff(); }
+        else if (this.hp - hp > 0)
         {
             this.hp -= hp;
         }
@@ -24,6 +29,16 @@ public class Character : Block
         {
             Die();
         }
+    }
+
+    public void ShieldOn()
+    {
+        shield = true;
+    }
+
+    private void ShieldOff()
+    {
+        shield = false;
     }
 
     protected virtual void Die()

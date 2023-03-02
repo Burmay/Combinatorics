@@ -64,8 +64,6 @@ public class GameManager : MonoBehaviour
         {
             case GameState.GenerateLvl:
                 GenerateLvl();
-                break;
-            case GameState.SpawningBlocks:
                 SpawnRandomElement(_elementsPerStroke);
                 break;
             case GameState.WatingInput:
@@ -128,18 +126,18 @@ public class GameManager : MonoBehaviour
         Invoke("SpawnRandomElement", _trevelBlockTime);
 
         _player.ChangeMotionStatus(true);
+        var seqence = DOTween.Sequence();
 
         var orderedBlocks = SortingBlocks(direction);
         foreach (var block in orderedBlocks)
         {
-            int distance = block.mobile;
+            int distance = block.mobile + 1;
             if (distance > 0)
             {
-                distance--;
                 Node next = block.node; // получаем линк на ноду в отдельный кластер
                 do // начиная с крайних нод, пробуем их смещать
                 {
-
+                    distance--;
                     block.ChangeNode(next); // если в прошлом цикле позиция изменилась, обновляем данные ячейки
 
 
@@ -155,25 +153,20 @@ public class GameManager : MonoBehaviour
 
                         else if (possibleNode.occupiedBlock == null) { next = possibleNode; } // место уже занято? Нет - меняем NEXT и идём дальше
                     }
-                } while (next != block.node || distance < 0); // повторяем, пока не будет любого препядствия
+                } while (next != block.node && distance > 0); // повторяем, пока не будет любого препядствия
+
 
                 if ((Vector2)block.transform.position != block.node.Pos) // если смещение есть, двигаем в конечную
                 {
                     block.transform.DOMove(block.node.Pos, _trevelBlockTime);
                 }
+
+                Vector2 movePoint = block.mergingBlock != null ? block.mergingBlock.node.Pos : block.node.Pos; // если есть коллизия, двигаем в её специфичную конечную
+                seqence.Insert(0, block.transform.DOMove(movePoint, _trevelBlockTime)); 
             }
         }
 
-        var seqence = DOTween.Sequence();
-
-        foreach (Block block in orderedBlocks)
-        {
-            var movePoint = block.mergingBlock != null ? block.mergingBlock.node.Pos : block.node.Pos;
-
-            seqence.Insert(0, block.transform.DOMove(movePoint, _trevelBlockTime));
-        }
-
-        seqence.OnComplete(() =>
+        seqence.OnComplete(() => // по завершению движения при коллизии, обрабаываем столкновение
         {
             foreach (var block in orderedBlocks.Where(b => b.mergingBlock != null))
             {
@@ -204,7 +197,6 @@ public class GameManager : MonoBehaviour
         Invoke("CreatePlayer", 2f);
         Invoke("CreateEnemy", 2f);
         _round = 0;
-        ChangeState(GameState.SpawningBlocks);
         ChangeState(GameState.WatingInput);
     }
     private void CreatePlayer()
@@ -288,7 +280,6 @@ public class GameManager : MonoBehaviour
 public enum GameState
 {
     GenerateLvl,
-    SpawningBlocks,
     WatingInput,
     Moving,
     Win,
