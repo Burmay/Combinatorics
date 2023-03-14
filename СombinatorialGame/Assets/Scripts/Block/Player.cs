@@ -4,14 +4,17 @@ using UnityEngine;
 
 public class Player : Character
 {
+    private GameManager _manager;
 
     void Start()
     {
         animator.GetComponent<Animator>();
+        base.type = BlockType.Player;
     }
 
-    public Player Initialize()
+    public Player Initialize(GameManager manager)
     {
+        _manager = manager;
         return this;
     }
 
@@ -27,5 +30,6 @@ public class Player : Character
     {
         Debug.Log("Перс сдох");
         base.Die();
+        _manager.ChangeState(GameState.Lose);
     }
 }

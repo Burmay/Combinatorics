@@ -8,6 +8,7 @@ public class Block : MonoBehaviour
     public Node node;
     public int mobile;
     public Block mergingBlock;
+    public BlockType type;
 
     public Vector2 Pos => transform.position;
 

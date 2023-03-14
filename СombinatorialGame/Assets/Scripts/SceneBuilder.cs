@@ -18,7 +18,10 @@ public class SceneBuilder : MonoBehaviour
     {
         SetEnviroment();
         float[,] fieldData = GenereteDataForField();
-        _nodesList = new List<Node>();
+        if(_nodesList == null)
+        {
+            _nodesList = new List<Node>();
+        }
         StartCoroutine(CreateField(fieldData));
         return _nodesList;
     }
@@ -35,11 +38,6 @@ public class SceneBuilder : MonoBehaviour
 
             StopCoroutine("CreateField");
         }
-    }
-
-    private void CreatePlayer()
-    {
-
     }
 
     private void SetEnviroment()
@@ -123,8 +121,15 @@ public class SceneBuilder : MonoBehaviour
     {
         foreach(Node node in _nodesList)
         {
-            //_nodesList.Remove(node);
-            //Destroy(node.gameObject);
+            Destroy(node.gameObject);
         }
+        _nodesList.Clear();
+        DestroyEnviroment();
+        _currentNodeIndex = 0;
+    }
+
+    private void DestroyEnviroment()
+    {
+
     }
 }

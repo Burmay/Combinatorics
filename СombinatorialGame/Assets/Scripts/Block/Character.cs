@@ -8,10 +8,12 @@ public class Character : Block
     [SerializeField] protected int hp;
     [SerializeField] protected GameManager manager;
     protected bool shield;
+    public bool stun;
 
     public override void Init(GameManager manager)
     {
         this.manager = manager;
+        stun = false;
         // характеристики заложены, или выставляются руками?
     }
 

@@ -5,21 +5,21 @@ using UnityEngine;
 public class Collision : MonoBehaviour
 {
     [SerializeField] private GameManager _manager;
-    private Element _firePrefab;
-    private Element _waterPrefab;
-    private Element _stonePrefab;
-    [SerializeField] private Element _fireTwoPrefab;
-    [SerializeField] private Element _waterTwoPrefab;
-    [SerializeField] private Element _stomeTwoPrefab;
-    [SerializeField] private Element _lavaPrefab;
-    [SerializeField] private Element _steamPrefab;
-    [SerializeField] private Element _platnPrefab;
+    private Element _fireOnePrefab, _waterOnePrefab, _stoneOnePrefab, _fireTwoPrefab, _waterTwoPrefab, _stomeTwoPrefab, _lavaPrefab, _steamPrefab, _plantPrefab;
+    System.Random random = new System.Random();
 
-    public void SetElementsPrefab(Element fire, Element water, Element stone)
+    public void SetElementsPrefab(Element fire, Element water, Element stone, Element fireTwo, Element waterTwo, Element stoneTwo, Element lava, Element steam, Element plant)
     {
-        _firePrefab = fire;
-        _waterPrefab = water;
-        _stonePrefab = stone;
+        _fireOnePrefab = fire;
+        _waterOnePrefab = water;
+        _stoneOnePrefab = stone;
+        _fireTwoPrefab = fireTwo;
+        _waterTwoPrefab = waterTwo;
+        _stomeTwoPrefab = stoneTwo;
+        _lavaPrefab = lava;
+        _steamPrefab = steam;
+        _plantPrefab = plant;
+
     }
 
     // Проверка, есть ли вообще столкновение
@@ -27,12 +27,15 @@ public class Collision : MonoBehaviour
     public bool CollisionResult(Block incoming, Block standing, int maxOrderElement)
     {
         if (incoming is Element && standing is Element) { return CollisionElementsResult(incoming, standing, maxOrderElement); }
-        if (incoming is Player && standing is Enemy) { return CollosionEnemyWithPlayer(incoming); }
-        if (incoming is Enemy && standing is Player) { return CollosionEnemyWithPlayer(standing); }
-        if (incoming is Element && !(standing is Element)) { return CollisionUnitWithElement(standing, incoming); }
-        if (standing is Element && !(incoming is Element)) { return CollisionUnitWithElement(incoming, standing); }
-        if (incoming is Enemy && standing is Enemy) { return false; }
-        else { Debug.Log("Произошла странная коллизия"); return false; } // дебаг-строчка
+        else if (incoming is Player && standing is Enemy) { return CollosionEnemyWithPlayer(incoming); }
+        else if (incoming is Enemy && standing is Player) { return CollosionEnemyWithPlayer(standing); }
+        else if (incoming is Enemy && standing is Enemy) { return false; }
+        else if (incoming is Player && standing is Teleport) { return CollisionWithTeport(standing); }
+        else if (incoming is Teleport && standing is Player) { return CollisionWithTeport(incoming); }
+        else if (incoming is Teleport && !(standing is Player) || standing is Teleport && !(incoming is Player)) { return false; }
+        else if (incoming is Element && !(standing is Element)) { return CollisionUnitWithElement(standing, incoming); }
+        else if (standing is Element && !(incoming is Element)) { return CollisionUnitWithElement(incoming, standing); }
+        else { Debug.Log("Произошла странная коллизия " + incoming + " " + standing); return false; } // дебаг-строчка
     }
 
     private bool CollisionElementsResult(Block incoming, Block standing, int maxOrderElement)
@@ -42,7 +45,7 @@ public class Collision : MonoBehaviour
 
         if (el1.orderElement == el2.orderElement && el1.orderElement != maxOrderElement)
         {
-            if (GetElementsType(el1, el2) != Elements.Null)
+            if (GetElementsType(el1, el2) != BlockType.Null)
             {
                 return true;
             }
@@ -54,12 +57,12 @@ public class Collision : MonoBehaviour
         else { return false; }
     }
 
-    public bool CollosionEnemyWithPlayer(Block player)
+    private bool CollosionEnemyWithPlayer(Block player)
     {
         return true;
     }
 
-    public bool CollisionUnitWithElement(Block suffering, Block element)
+    private bool CollisionUnitWithElement(Block suffering, Block element)
     {
         Character character = suffering as Character;
         Element el = element as Element;
@@ -69,9 +72,15 @@ public class Collision : MonoBehaviour
         }
         else
         {
-            if (el.type == Elements.Stone || el.type == Elements.Lava) { return false; }
+            if (el.type == BlockType.Stone || el.type == BlockType.Lava) { return false; }
             else { return true; }
         }
+    }
+
+    private bool CollisionWithTeport(Block block)
+    {
+        Teleport teleport = block as Teleport;
+        return teleport.Condition;
     }
 
     // Обработка коллизии - выбор сценария 
@@ -81,44 +90,45 @@ public class Collision : MonoBehaviour
         if (standing is Element && incoming is Element) { MegreElements(incoming, standing); }
         else if (standing is Character && incoming is Element || incoming is Character && standing is Element) { MergeElementWithUnit(standing, incoming); }
         else if (standing is Character && incoming is Character) { MergeUnit(standing, incoming); }
+        else if (incoming is Teleport || standing is Teleport) { _manager.ChangeState(GameState.Win); }
     }
 
     // Определение резльтата столкновения двух элементов и спавн нового типа
 
     private void MegreElements(Block incoming, Block standing)
     {
-        _manager.SpawnElement(standing.node, GetElementsPrefab(standing, incoming));
+        _manager.SpawnElement(standing.node, GetNewElementsPrefab(standing, incoming));
         _manager.RemoveBlock(standing);
         _manager.RemoveBlock(incoming);
     }
 
-    private Elements GetElementsType(Block el1, Block el2)
+    private BlockType GetElementsType(Block el1, Block el2)
     {
         Element element1 = el1 as Element;
         Element element2 = el2 as Element;
-        if (element1.type == Elements.Fire && element2.type == Elements.Fire) { return Elements.Fire; }
-        else if (element1.type == Elements.Water && element2.type == Elements.Water) { return Elements.Water; }
-        else if (element1.type == Elements.Stone && element2.type == Elements.Stone) { return Elements.Stone; }
+        if (element1.type == BlockType.Fire && element2.type == BlockType.Fire) { return BlockType.Fire; }
+        else if (element1.type == BlockType.Water && element2.type == BlockType.Water) { return BlockType.Water; }
+        else if (element1.type == BlockType.Stone && element2.type == BlockType.Stone) { return BlockType.Stone; }
         ///
-        else if (element1.type == Elements.Fire && element2.type == Elements.Water || element1.type == Elements.Water && element2.type == Elements.Fire) { return Elements.Steam; }
-        else if (element1.type == Elements.Fire && element2.type == Elements.Stone || element1.type == Elements.Stone && element2.type == Elements.Fire) { return Elements.Lava; }
-        else if (element1.type == Elements.Stone && element2.type == Elements.Water || element1.type == Elements.Water && element2.type == Elements.Stone) { return Elements.Plant; }
+        else if (element1.type == BlockType.Fire && element2.type == BlockType.Water || element1.type == BlockType.Water && element2.type == BlockType.Fire) { return BlockType.Steam; }
+        else if (element1.type == BlockType.Fire && element2.type == BlockType.Stone || element1.type == BlockType.Stone && element2.type == BlockType.Fire) { return BlockType.Lava; }
+        else if (element1.type == BlockType.Stone && element2.type == BlockType.Water || element1.type == BlockType.Water && element2.type == BlockType.Stone) { return BlockType.Plant; }
         ///
-        else { return Elements.Null; }
+        else { return BlockType.Null; }
     }
 
-    public Element GetElementsPrefab(Block el1, Block el2)
+    public Element GetNewElementsPrefab(Block el1, Block el2)
     {
         Element element1 = el1 as Element;
         Element element2 = el2 as Element;
-        Elements elements = GetElementsType(el1, el2);
+        BlockType elements = GetElementsType(el1, el2);
 
-        if (elements == Elements.Fire && element1.orderElement == 1) { return _fireTwoPrefab; }
-        else if (elements == Elements.Water && element1.orderElement == 1) { return _waterTwoPrefab; }
-        else if (elements == Elements.Stone && element1.orderElement == 1) { return _stomeTwoPrefab; }
-        else if (elements == Elements.Lava && element1.orderElement == 1) { return _lavaPrefab; }
-        else if (elements == Elements.Steam && element1.orderElement == 1) { return _steamPrefab; }
-        else if(elements == Elements.Plant && element1.orderElement == 1) { return _platnPrefab; }
+        if (elements == BlockType.Fire && element1.orderElement == 1) { return _fireTwoPrefab; }
+        else if (elements == BlockType.Water && element1.orderElement == 1) { return _waterTwoPrefab; }
+        else if (elements == BlockType.Stone && element1.orderElement == 1) { return _stomeTwoPrefab; }
+        else if (elements == BlockType.Lava && element1.orderElement == 1) { return _lavaPrefab; }
+        else if (elements == BlockType.Steam && element1.orderElement == 1) { return _steamPrefab; }
+        else if(elements == BlockType.Plant && element1.orderElement == 1) { return _plantPrefab; }
         else { return null; }
     }
 
@@ -128,10 +138,10 @@ public class Collision : MonoBehaviour
     {
         Element element; Character unit;
         if (standing is Element) { element = standing as Element; unit = incoming as Character; } else { element = incoming as Element; unit = standing as Character; }
-        if (element.type == Elements.Fire) { FireEffect(unit); } 
-        else if (element.type == Elements.Plant) { PlantEffect(unit); }
-        else if (element.type == Elements.Water) { WaterEffect(unit); }
-        else if (element.type == Elements.Steam) { SteamEffect(unit); }
+        if (element.type == BlockType.Fire) { FireEffect(unit); } 
+        else if (element.type == BlockType.Plant) { PlantEffect(unit); }
+        else if (element.type == BlockType.Water) { WaterEffect(unit); }
+        else if (element.type == BlockType.Steam) { SteamEffect(unit); }
 
         _manager.RemoveBlock(element);
     }
@@ -168,6 +178,9 @@ public class Collision : MonoBehaviour
     private void SteamEffect(Character unit)
     {
         // CD
+        Debug.Log("Смещениие");
+        Vector2 randomDir = new Vector2(random.Next(0,1), random.Next(0,1));
+        _manager.ShiftOne(unit, randomDir); // смещение
     }
 
     private void PlantEffect(Character unit)

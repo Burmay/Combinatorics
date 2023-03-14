@@ -155,11 +155,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deea7db2efbb02742833a73b49759c74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _firePrefab: {fileID: 8559068416633545890, guid: f1fa6ecfa14ebd447a13bb46ac9a3bc2, type: 3}
-  _waterPrefab: {fileID: 1857490976737054772, guid: 4882bf54c05af8e4093afa714244c14d, type: 3}
-  _stonePrefab: {fileID: 1146692039735210028, guid: 770bd38c86bb43a4d9c7cbe1b25aa427, type: 3}
+  _fireOnePrefab: {fileID: 8559068416633545890, guid: f1fa6ecfa14ebd447a13bb46ac9a3bc2, type: 3}
+  _waterOnePrefab: {fileID: 1857490976737054772, guid: 4882bf54c05af8e4093afa714244c14d, type: 3}
+  _stoneOnePrefab: {fileID: 1146692039735210028, guid: 770bd38c86bb43a4d9c7cbe1b25aa427, type: 3}
+  _fireTwoPrefab: {fileID: 7769354679249648628, guid: 488993d5c9acce849b96d95fa3986423, type: 3}
+  _waterTwoPrefab: {fileID: 8509908624720210448, guid: f095a325e79dabc4fa22d364b417f02a, type: 3}
+  _stomeTwoPrefab: {fileID: 3415733036223910363, guid: e625ffa9cc64de74cb60948d0a4a422a, type: 3}
+  _lavaPrefab: {fileID: 1546137687693003352, guid: 994431c7b342e27488ef7da2b97b2c13, type: 3}
+  _steamPrefab: {fileID: 6598537542005909225, guid: 02ef9ee7dd8d99c49a35c6c3e44eb5c0, type: 3}
+  _plantPrefab: {fileID: 1677612949899770163, guid: 613f1e7bc7c5f884781dd22c16c1eff9, type: 3}
   _playerPrefab: {fileID: 9028734972248818491, guid: 16229bdca70081545a6ce6afb5d9db01, type: 3}
   _enemyPrefab: {fileID: 3878425175811258145, guid: 4ae591c330eb53644b94cd7e48929018, type: 3}
+  _teleportPrefab: {fileID: 2888061008461680670, guid: 1a513cb3d2579074cbb4573707164be6, type: 3}
   _coefficientCells: 0.87
   _trevelBlockTime: 0.5
   _sceneBuilder: {fileID: 639512020}
@@ -231,12 +238,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _manager: {fileID: 639512017}
-  _fireTwoPrefab: {fileID: 7769354679249648628, guid: 488993d5c9acce849b96d95fa3986423, type: 3}
-  _waterTwoPrefab: {fileID: 8509908624720210448, guid: f095a325e79dabc4fa22d364b417f02a, type: 3}
-  _stomeTwoPrefab: {fileID: 3415733036223910363, guid: e625ffa9cc64de74cb60948d0a4a422a, type: 3}
-  _lavaPrefab: {fileID: 1546137687693003352, guid: 994431c7b342e27488ef7da2b97b2c13, type: 3}
-  _steamPrefab: {fileID: 6598537542005909225, guid: 02ef9ee7dd8d99c49a35c6c3e44eb5c0, type: 3}
-  _platnPrefab: {fileID: 1677612949899770163, guid: 613f1e7bc7c5f884781dd22c16c1eff9, type: 3}
 --- !u!1 &1880856856
 GameObject:
   m_ObjectHideFlags: 0

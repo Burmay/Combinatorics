@@ -7,11 +7,10 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] private Element _firePrefab;
-    [SerializeField] private Element _waterPrefab;
-    [SerializeField] private Element _stonePrefab;
+    [SerializeField] private Element _fireOnePrefab, _waterOnePrefab, _stoneOnePrefab, _fireTwoPrefab, _waterTwoPrefab, _stomeTwoPrefab, _lavaPrefab, _steamPrefab, _plantPrefab;
     [SerializeField] private Player _playerPrefab;
     [SerializeField] private Enemy _enemyPrefab;
+    [SerializeField] private Teleport _teleportPrefab;
 
     [SerializeField] private float _coefficientCells;
     [SerializeField] private float _trevelBlockTime;
@@ -26,6 +25,7 @@ public class GameManager : MonoBehaviour
 
     private List<Block> _blocksList;
     private List<Node> _nodesList;
+    private List<LoadData> _loadDataList;
     public GameState _state;
     private int _round = 0;
     private Player _player;
@@ -34,10 +34,6 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         ChangeState(GameState.GenerateLvl);
-        this.Wait(3f, () =>
-        {
-            SpawnRandomElement(_startElementCount);
-        });
     }
 
     private void Update()
@@ -55,6 +51,8 @@ public class GameManager : MonoBehaviour
         else if (Input.GetKeyDown(KeyCode.UpArrow)) { Shift(Vector2.up); }
         else if (Input.GetKeyDown(KeyCode.DownArrow)) { Shift(Vector2.down); }
 
+        if (Input.GetKeyDown(KeyCode.Backspace)) { ReverseMove(); }
+
     }
 
     public void ChangeState(GameState newState)
@@ -64,11 +62,15 @@ public class GameManager : MonoBehaviour
         {
             case GameState.GenerateLvl:
                 GenerateLvl();
-                SpawnRandomElement(_elementsPerStroke);
+                this.Wait(3f, () =>
+                {
+                    SpawnRandomElement(_startElementCount);
+                });
                 break;
             case GameState.WatingInput:
                 break;
             case GameState.Moving:
+                //SaveMove();
                 break;
             case GameState.Win:
                 break;
@@ -124,6 +126,7 @@ public class GameManager : MonoBehaviour
         if (CheckOpportunityShift(direction) == false || _state != GameState.WatingInput) { return; }
         ChangeState(GameState.Moving);
         Invoke("SpawnRandomElement", _trevelBlockTime);
+        bool collision;
 
         _player.ChangeMotionStatus(true);
         var seqence = DOTween.Sequence();
@@ -131,6 +134,7 @@ public class GameManager : MonoBehaviour
         var orderedBlocks = SortingBlocks(direction);
         foreach (var block in orderedBlocks)
         {
+            collision = false;
             int distance = block.mobile + 1;
             if (distance > 0)
             {
@@ -149,11 +153,13 @@ public class GameManager : MonoBehaviour
                             // !!!! запись для обработки столкновения
                             block.mergingBlock = possibleNode.occupiedBlock;
                             next = possibleNode;
+                            collision = true;
+                            block.ChangeNode(next);
                         }
 
                         else if (possibleNode.occupiedBlock == null) { next = possibleNode; } // место уже занято? Нет - меняем NEXT и идём дальше
                     }
-                } while (next != block.node && distance > 0); // повторяем, пока не будет любого препядствия
+                } while (next != block.node && distance > 0 && collision == false); // повторяем, пока не будет любого препядствия
 
 
                 if ((Vector2)block.transform.position != block.node.Pos) // если смещение есть, двигаем в конечную
@@ -174,9 +180,49 @@ public class GameManager : MonoBehaviour
             }
 
             SetLevelsBlocks();
+            if (_state == GameState.Win) { Win(); }
+            else if (_state == GameState.Lose) { Lose(); }
         });
+
         Invoke("EndMovingState", _strokeLag);
         Invoke("EndPlayerMoving", _trevelBlockTime);
+    }
+
+    public void ShiftOne(Character block, Vector2 direction)
+    {
+        //bool collision = false;
+        //int distance = block.mobile + 1;
+        //if (distance > 0)
+        //{
+        //    Node next = block.node; // получаем линк на ноду в отдельный кластер
+        //    do // начиная с крайних нод, пробуем их смещать
+        //    {
+        //        distance--;
+        //        block.ChangeNode(next); // если в прошлом цикле позиция изменилась, обновляем данные ячейки
+        //
+        //
+        //        Node possibleNode = GetNodeAtPosition(next.Pos + new Vector2(direction.x, direction.y * _coefficientCells)); // смотрим, существует ли вообще нода на +1 в направлении смещения
+        //        if (possibleNode != null) // нет? Проехали, оставили блок в покое
+        //        {
+        //            if (possibleNode.occupiedBlock != null && _collision.CollisionResult(block, possibleNode.occupiedBlock, _maxOrederElenet) && possibleNode.occupiedBlock.mergingBlock == null) // коллизия есть?
+        //            {
+        //                // !!!! запись для обработки столкновения
+        //                block.mergingBlock = possibleNode.occupiedBlock;
+        //                next = possibleNode;
+        //                collision = true;
+        //                block.ChangeNode(next);
+        //            }
+        //
+        //            else if (possibleNode.occupiedBlock == null) { next = possibleNode; } // место уже занято? Нет - меняем NEXT и идём дальше
+        //        }
+        //    } while (next != block.node && distance > 0 && collision == false); // повторяем, пока не будет любого препядствия
+        //
+        //
+        //    if ((Vector2)block.transform.position != block.node.Pos) // если смещение есть, двигаем в конечную
+        //    {
+        //        block.transform.DOMove(block.node.Pos, _trevelBlockTime);
+        //    }
+        //}
     }
 
     private void EndMovingState()
@@ -191,11 +237,16 @@ public class GameManager : MonoBehaviour
 
     private void GenerateLvl()
     {
-        _blocksList = new List<Block>();
+        if(_blocksList == null)
+        {
+            _blocksList = new List<Block>();
+            _loadDataList = new List<LoadData>();
+        }
         _nodesList = _sceneBuilder.GenerateLvl();
-        _collision.SetElementsPrefab(_firePrefab, _waterPrefab, _stonePrefab);
+        _collision.SetElementsPrefab(_fireOnePrefab, _waterOnePrefab, _stoneOnePrefab, _fireTwoPrefab, _waterTwoPrefab, _stomeTwoPrefab, _lavaPrefab, _steamPrefab, _plantPrefab);
         Invoke("CreatePlayer", 2f);
         Invoke("CreateEnemy", 2f);
+        Invoke("CreateTeleport", 2f);
         _round = 0;
         ChangeState(GameState.WatingInput);
     }
@@ -205,7 +256,7 @@ public class GameManager : MonoBehaviour
         player.Init(this);
         player.ChangeNode(_nodesList[0]);
         _blocksList.Add(player);
-        _player = player.Initialize();
+        _player = player.Initialize(this);
     }
 
     private void CreateEnemy()
@@ -214,6 +265,14 @@ public class GameManager : MonoBehaviour
         enemy.Init(this);
         enemy.ChangeNode(_nodesList[_nodesList.Count - 1]);
         _blocksList.Add(enemy);
+    }
+
+    private void CreateTeleport()
+    {
+        var teleport = Instantiate(_teleportPrefab, _nodesList[_nodesList.Count - 6].Pos, Quaternion.identity);
+        teleport.Init(this);
+        teleport.ChangeNode(_nodesList[_nodesList.Count - 6]);
+        _blocksList.Add(teleport);
     }
 
     private List<Block> SortingBlocks(Vector2 direction)
@@ -243,9 +302,9 @@ public class GameManager : MonoBehaviour
         foreach(var node in freeNodes.Take(amount))
         {
             float rand = UnityEngine.Random.value;
-            if(rand > 0.66f) { SpawnElement(node, _firePrefab); }
-            else if(rand < 0.33f) { SpawnElement(node, _stonePrefab); }
-            else { SpawnElement(node, _waterPrefab); }
+            if(rand > 0.66f) { SpawnElement(node, _fireOnePrefab); }
+            else if(rand < 0.33f) { SpawnElement(node, _stoneOnePrefab); }
+            else { SpawnElement(node, _waterOnePrefab); }
         }
 
 
@@ -275,6 +334,85 @@ public class GameManager : MonoBehaviour
         return _nodesList.FirstOrDefault(n => n.Pos == pos);
     }
 
+    private void SaveMove()
+    {
+        _loadDataList.Add(new LoadData(_blocksList));
+    }
+
+    private void ReverseMove()
+    {
+        if (_loadDataList.Count < 1) { return; }
+        _loadDataList.RemoveAt(_loadDataList.Count - 1);
+        _blocksList.Clear();
+
+    }
+
+    private void RestoreBlock()
+    {
+        LoadData loadData = _loadDataList[_loadDataList.Count - 1];
+    }
+
+    public void Win()
+    {
+        Debug.Log("Win");
+        DestroyScene();
+        GenerateLvl();
+    }
+
+    private void Lose()
+    {
+        Debug.Log("Lose");
+        DestroyScene();
+    }
+
+    private void DestroyScene()
+    {
+        foreach(Block block in _blocksList)
+        {
+            Destroy(block.gameObject);
+        }
+        _blocksList.Clear();
+        _loadDataList.Clear();
+        _sceneBuilder.DestroyLvl();
+    }
+
+}
+
+public class LoadData
+{
+    private List<Node> nodeList;
+    private List<BlockType> typeList;
+    private List<int> orderList;
+
+    public LoadData(List<Block> blocks)
+    {
+        nodeList = new List<Node>(); typeList = new List<BlockType>(); orderList = new List<int>();
+        foreach(Block block in blocks)
+        {
+            nodeList.Add(block.node);
+            typeList.Add(block.type);
+            if(block is Element)
+            {
+                Element element = block as Element;
+                orderList.Add(element.orderElement);
+            }
+            else { orderList.Add(int.MinValue); }
+        }
+    }
+}
+
+public enum BlockType
+{
+    Null,
+    Fire,
+    Water,
+    Stone,
+    Lava,
+    Steam,
+    Plant,
+    Player,
+    Enemy,
+    Teleport
 }
 
 public enum GameState
