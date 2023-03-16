@@ -15,7 +15,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float _coefficientCells;
     [SerializeField] private float _trevelBlockTime;
     [SerializeField] private SceneBuilder _sceneBuilder;
-    [SerializeField] private Collision _collision;
+    [SerializeField] private CollisionHandler _collision;
+    [SerializeField] private SceneConfigurator _configurator;
     [SerializeField] private Vector2 _playerStartPosition;
 
     [SerializeField] private int _elementsPerStroke;
@@ -75,6 +76,7 @@ public class GameManager : MonoBehaviour
             case GameState.Win:
                 break;
             case GameState.Lose:
+                Lose();
                 break;
         }
     }
@@ -127,8 +129,6 @@ public class GameManager : MonoBehaviour
         ChangeState(GameState.Moving);
         Invoke("SpawnRandomElement", _trevelBlockTime);
         bool collision;
-
-        _player.ChangeMotionStatus(true);
         var seqence = DOTween.Sequence();
 
         var orderedBlocks = SortingBlocks(direction);
@@ -136,7 +136,7 @@ public class GameManager : MonoBehaviour
         {
             collision = false;
             int distance = block.mobile + 1;
-            if (distance > 0)
+            if (distance > 0 && CheckPossibilityOfMove(block))
             {
                 Node next = block.node; // получаем линк на ноду в отдельный кластер
                 do // начиная с крайних нод, пробуем их смещать
@@ -161,9 +161,15 @@ public class GameManager : MonoBehaviour
                     }
                 } while (next != block.node && distance > 0 && collision == false); // повторяем, пока не будет любого препядствия
 
+                if(block is Player || block is Enemy) { Character character = block as Character; if(character.stun) {character.StunOff(); } }
 
                 if ((Vector2)block.transform.position != block.node.Pos) // если смещение есть, двигаем в конечную
                 {
+                    if(block is Character)
+                    {
+                        Character character = block as Character;
+                        character.Move();
+                    }
                     block.transform.DOMove(block.node.Pos, _trevelBlockTime);
                 }
 
@@ -185,54 +191,23 @@ public class GameManager : MonoBehaviour
         });
 
         Invoke("EndMovingState", _strokeLag);
-        Invoke("EndPlayerMoving", _trevelBlockTime);
     }
 
-    public void ShiftOne(Character block, Vector2 direction)
+    private bool CheckPossibilityOfMove(Block block)
     {
-        //bool collision = false;
-        //int distance = block.mobile + 1;
-        //if (distance > 0)
-        //{
-        //    Node next = block.node; // получаем линк на ноду в отдельный кластер
-        //    do // начиная с крайних нод, пробуем их смещать
-        //    {
-        //        distance--;
-        //        block.ChangeNode(next); // если в прошлом цикле позиция изменилась, обновляем данные ячейки
-        //
-        //
-        //        Node possibleNode = GetNodeAtPosition(next.Pos + new Vector2(direction.x, direction.y * _coefficientCells)); // смотрим, существует ли вообще нода на +1 в направлении смещения
-        //        if (possibleNode != null) // нет? Проехали, оставили блок в покое
-        //        {
-        //            if (possibleNode.occupiedBlock != null && _collision.CollisionResult(block, possibleNode.occupiedBlock, _maxOrederElenet) && possibleNode.occupiedBlock.mergingBlock == null) // коллизия есть?
-        //            {
-        //                // !!!! запись для обработки столкновения
-        //                block.mergingBlock = possibleNode.occupiedBlock;
-        //                next = possibleNode;
-        //                collision = true;
-        //                block.ChangeNode(next);
-        //            }
-        //
-        //            else if (possibleNode.occupiedBlock == null) { next = possibleNode; } // место уже занято? Нет - меняем NEXT и идём дальше
-        //        }
-        //    } while (next != block.node && distance > 0 && collision == false); // повторяем, пока не будет любого препядствия
-        //
-        //
-        //    if ((Vector2)block.transform.position != block.node.Pos) // если смещение есть, двигаем в конечную
-        //    {
-        //        block.transform.DOMove(block.node.Pos, _trevelBlockTime);
-        //    }
-        //}
+        if (block is Stalker) { StalkerShift(); return false; }
+        else if (block is Character) { Character character = block as Character; if (character.stun) return false; else return true; }
+        else return true;
+    }
+
+    private void StalkerShift()
+    {
+
     }
 
     private void EndMovingState()
     {
         ChangeState(GameState.WatingInput);
-    }
-
-    private void EndPlayerMoving()
-    {
-        _player.ChangeMotionStatus(false);
     }
 
     private void GenerateLvl()
@@ -244,35 +219,27 @@ public class GameManager : MonoBehaviour
         }
         _nodesList = _sceneBuilder.GenerateLvl();
         _collision.SetElementsPrefab(_fireOnePrefab, _waterOnePrefab, _stoneOnePrefab, _fireTwoPrefab, _waterTwoPrefab, _stomeTwoPrefab, _lavaPrefab, _steamPrefab, _plantPrefab);
-        Invoke("CreatePlayer", 2f);
-        Invoke("CreateEnemy", 2f);
-        Invoke("CreateTeleport", 2f);
         _round = 0;
         ChangeState(GameState.WatingInput);
     }
-    private void CreatePlayer()
+
+    public void EnablingEnvironment()
     {
-        var player = Instantiate(_playerPrefab, _nodesList[0].Pos, Quaternion.identity);
-        player.Init(this);
-        player.ChangeNode(_nodesList[0]);
-        _blocksList.Add(player);
-        _player = player.Initialize(this);
+        SpawnBlock(_playerPrefab, 1);
+        SpawnBlock(_teleportPrefab, 1);
+        SpawnBlock(_enemyPrefab, _configurator.GetNumberEnemy);
     }
 
-    private void CreateEnemy()
+    private void SpawnBlock(Block blockPrefab, int amount)
     {
-        var enemy = Instantiate(_enemyPrefab, _nodesList[_nodesList.Count - 1].Pos, Quaternion.identity);
-        enemy.Init(this);
-        enemy.ChangeNode(_nodesList[_nodesList.Count - 1]);
-        _blocksList.Add(enemy);
-    }
-
-    private void CreateTeleport()
-    {
-        var teleport = Instantiate(_teleportPrefab, _nodesList[_nodesList.Count - 6].Pos, Quaternion.identity);
-        teleport.Init(this);
-        teleport.ChangeNode(_nodesList[_nodesList.Count - 6]);
-        _blocksList.Add(teleport);
+        var freeNodes = _nodesList.Where(n => n.occupiedBlock == null).OrderBy(b => UnityEngine.Random.value);
+        foreach (var node in freeNodes.Take(amount))
+        {
+            var block = Instantiate(blockPrefab, node.Pos, Quaternion.identity);
+            block.Init(this);
+            block.ChangeNode(node);
+            _blocksList.Add(block);
+        }
     }
 
     private List<Block> SortingBlocks(Vector2 direction)
@@ -354,9 +321,10 @@ public class GameManager : MonoBehaviour
 
     public void Win()
     {
+        _configurator.UpLvl();
         Debug.Log("Win");
         DestroyScene();
-        GenerateLvl();
+        ChangeState(GameState.GenerateLvl);
     }
 
     private void Lose()

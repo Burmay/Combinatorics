@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Collision : MonoBehaviour
+public class CollisionHandler : MonoBehaviour
 {
     [SerializeField] private GameManager _manager;
     private Element _fireOnePrefab, _waterOnePrefab, _stoneOnePrefab, _fireTwoPrefab, _waterTwoPrefab, _stomeTwoPrefab, _lavaPrefab, _steamPrefab, _plantPrefab;
@@ -57,9 +57,11 @@ public class Collision : MonoBehaviour
         else { return false; }
     }
 
-    private bool CollosionEnemyWithPlayer(Block player)
+    private bool CollosionEnemyWithPlayer(Block block)
     {
-        return true;
+        Player player = block as Player;
+        if (player.Shield) { player.ShieldOff(); return false; }
+        else return true;
     }
 
     private bool CollisionUnitWithElement(Block suffering, Block element)
@@ -180,11 +182,10 @@ public class Collision : MonoBehaviour
         // CD
         Debug.Log("Смещениие");
         Vector2 randomDir = new Vector2(random.Next(0,1), random.Next(0,1));
-        _manager.ShiftOne(unit, randomDir); // смещение
     }
 
     private void PlantEffect(Character unit)
     {
-        // оплетение
+        unit.StunOn();
     }
 }

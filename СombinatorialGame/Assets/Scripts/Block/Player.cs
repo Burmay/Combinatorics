@@ -4,32 +4,31 @@ using UnityEngine;
 
 public class Player : Character
 {
-    private GameManager _manager;
-
     void Start()
     {
         animator.GetComponent<Animator>();
         base.type = BlockType.Player;
     }
 
-    public Player Initialize(GameManager manager)
+    public override Block Init(GameManager manager)
     {
-        _manager = manager;
+        base.Init(manager);
         return this;
     }
 
-    public void ChangeMotionStatus(bool motion)
+    public override void Move()
     {
-        if(animator != null)
+        if (animator != null)
         {
-            animator.SetBool("Move", motion);
+            animator.SetTrigger("Move");
         }
     }
 
     protected override void Die()
     {
         Debug.Log("Перс сдох");
+        Debug.Log(manager);
         base.Die();
-        _manager.ChangeState(GameState.Lose);
+        manager._state = GameState.Lose;
     }
 }

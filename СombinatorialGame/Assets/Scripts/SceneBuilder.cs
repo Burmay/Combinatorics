@@ -5,17 +5,20 @@ using System;
 
 public class SceneBuilder : MonoBehaviour
 {
-    [SerializeField] private int _width = 6, _height = 6;
+    private int _width, _height;
     [SerializeField] private Node _nodePrefab1, _nodePrefab2, _nodePrefab3;
     [SerializeField] private SpriteRenderer _boardPrefab;
     [SerializeField] private float _coefficientCells;
     [SerializeField] private GameManager _manager;
+    [SerializeField] private SceneConfigurator _configurator;
     [SerializeField] private float speedUnfoldingNodes;
     private List<Node> _nodesList;
     private int _currentNodeIndex;
 
     public List<Node> GenerateLvl()
     {
+        _width = _configurator.GetWidth;
+        _height = _configurator.GetHeight;
         SetEnviroment();
         float[,] fieldData = GenereteDataForField();
         if(_nodesList == null)
@@ -35,7 +38,7 @@ public class SceneBuilder : MonoBehaviour
         }
         if(_currentNodeIndex == _width * _height)
         {
-
+            _manager.EnablingEnvironment();
             StopCoroutine("CreateField");
         }
     }

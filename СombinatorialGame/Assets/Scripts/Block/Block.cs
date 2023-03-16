@@ -9,12 +9,14 @@ public class Block : MonoBehaviour
     public int mobile;
     public Block mergingBlock;
     public BlockType type;
+    protected GameManager manager;
 
     public Vector2 Pos => transform.position;
 
-    public virtual void Init(GameManager manager)
+    public virtual Block Init(GameManager manager)
     {
-        //this.mobile = mobile;
+        this.manager = manager;
+        return this;
     }
 
     public void ChangeNode(Node newNode)

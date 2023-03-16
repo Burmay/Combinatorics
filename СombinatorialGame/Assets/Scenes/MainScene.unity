@@ -136,6 +136,7 @@ GameObject:
   - component: {fileID: 639512020}
   - component: {fileID: 639512019}
   - component: {fileID: 639512021}
+  - component: {fileID: 639512022}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -171,6 +172,7 @@ MonoBehaviour:
   _trevelBlockTime: 0.5
   _sceneBuilder: {fileID: 639512020}
   _collision: {fileID: 639512021}
+  _configurator: {fileID: 639512022}
   _playerStartPosition: {x: 0, y: 0}
   _elementsPerStroke: 1
   _strokeLag: 1
@@ -216,14 +218,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3eb63ea7923a844c9f93a8c33d9e3d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _width: 6
-  _height: 6
   _nodePrefab1: {fileID: 2110700425609721252, guid: 8d155bfe8620a8d49946163b575f0fa2, type: 3}
   _nodePrefab2: {fileID: 8309022657717808723, guid: 9d013568046f27c4caeb5877b35f434c, type: 3}
   _nodePrefab3: {fileID: 6072607302785281210, guid: b99acf8c11e405e4c87dc83c55d774c2, type: 3}
   _boardPrefab: {fileID: 86117150067520785, guid: aa8a2dba31d2032479534545a1b7f7e7, type: 3}
   _coefficientCells: 0.87
   _manager: {fileID: 639512017}
+  _configurator: {fileID: 639512022}
   speedUnfoldingNodes: 0.03
 --- !u!114 &639512021
 MonoBehaviour:
@@ -238,6 +239,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _manager: {fileID: 639512017}
+--- !u!114 &639512022
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 639512016}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 882b189657722db4cb4518f23014f7da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1880856856
 GameObject:
   m_ObjectHideFlags: 0

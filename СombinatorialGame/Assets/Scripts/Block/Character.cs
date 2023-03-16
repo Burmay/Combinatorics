@@ -6,14 +6,14 @@ public class Character : Block
 {
     [SerializeField] protected Animator animator;
     [SerializeField] protected int hp;
-    [SerializeField] protected GameManager manager;
     protected bool shield;
     public bool stun;
 
-    public override void Init(GameManager manager)
+    public override Block Init(GameManager manager)
     {
-        this.manager = manager;
+        base.Init(manager);
         stun = false;
+        return this;
         // характеристики заложены, или выставляются руками?
     }
 
@@ -38,9 +38,23 @@ public class Character : Block
         shield = true;
     }
 
-    private void ShieldOff()
+    public void ShieldOff()
     {
         shield = false;
+    }
+
+    public void StunOn()
+    {
+        stun = true;
+    }
+    public void StunOff()
+    {
+        stun = false;
+    }
+
+    public virtual void Move()
+    {
+
     }
 
     protected virtual void Die()

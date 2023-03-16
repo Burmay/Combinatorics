@@ -14,4 +14,10 @@ public class Enemy : Character
         Debug.Log("Враг сдох");
         base.Die();
     }
+
+    public override Block Init(GameManager manager)
+    {
+        base.Init(manager);
+        return this;
+    }
 }
