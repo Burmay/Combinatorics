@@ -43,18 +43,19 @@ public class CollisionHandler : MonoBehaviour
         Element el1 = incoming as Element;
         Element el2 = standing as Element;
 
-        if (el1.orderElement == el2.orderElement && el1.orderElement != maxOrderElement)
+        if (el1.type == BlockType.Lava || el2.type == BlockType.Lava)
         {
-            if (GetElementsType(el1, el2) != BlockType.Null)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            if (el1.type == BlockType.Lava && el2.type == BlockType.Lava) { return false; }
+            else { return true; }
         }
-        else { return false; }
+        else if (el1.orderElement == el2.orderElement && el1.orderElement != maxOrderElement)
+        {
+            if (GetElementsType(el1, el2) != BlockType.Null) { return true; } else { return false; }
+        }
+        else
+        {
+            return false;
+        }
     }
 
     private bool CollosionEnemyWithPlayer(Block block)
@@ -89,7 +90,7 @@ public class CollisionHandler : MonoBehaviour
 
     public void MergeBlocks(Block standing, Block incoming)
     {
-        if (standing is Element && incoming is Element) { MegreElements(incoming, standing); }
+        if (standing is Element && incoming is Element) { MegreElements(incoming as Element, standing as Element); }
         else if (standing is Character && incoming is Element || incoming is Character && standing is Element) { MergeElementWithUnit(standing, incoming); }
         else if (standing is Character && incoming is Character) { MergeUnit(standing, incoming); }
         else if (incoming is Teleport || standing is Teleport) { _manager.ChangeState(GameState.Win); }
@@ -97,11 +98,21 @@ public class CollisionHandler : MonoBehaviour
 
     // Определение резльтата столкновения двух элементов и спавн нового типа
 
-    private void MegreElements(Block incoming, Block standing)
+    private void MegreElements(Element incoming, Element standing)
     {
-        _manager.SpawnElement(standing.node, GetNewElementsPrefab(standing, incoming));
-        _manager.RemoveBlock(standing);
-        _manager.RemoveBlock(incoming);
+        if (incoming.type == BlockType.Lava || standing.type == BlockType.Lava) { LavaDestroyElement(incoming, standing); }
+        else
+        {
+            _manager.SpawnElement(standing.node, GetNewElementsPrefab(standing, incoming));
+            _manager.RemoveBlock(standing);
+            _manager.RemoveBlock(incoming);
+        }
+    }
+
+    private void LavaDestroyElement(Element incoming, Element standing)
+    {
+        if (incoming.type == BlockType.Lava) { _manager.RemoveBlock(standing); }
+        else { _manager.RemoveBlock(incoming); }
     }
 
     private BlockType GetElementsType(Block el1, Block el2)
@@ -145,10 +156,11 @@ public class CollisionHandler : MonoBehaviour
         else if (element.type == BlockType.Water) { WaterEffect(unit); }
         else if (element.type == BlockType.Steam) { SteamEffect(unit); }
 
+        
         _manager.RemoveBlock(element);
     }
 
-    // Результат столкновение врага с юнитом
+    // Результат столкновения врага с юнитом
     private void MergeUnit(Block standing, Block incoming)
     {
         Player player;
@@ -174,14 +186,14 @@ public class CollisionHandler : MonoBehaviour
 
     private void LavaEffect(Character unit)
     {
-        //???
+        unit.SubtractHP(int.MaxValue);
     }
 
     private void SteamEffect(Character unit)
     {
-        // CD
-        Debug.Log("Смещениие");
-        Vector2 randomDir = new Vector2(random.Next(0,1), random.Next(0,1));
+        Debug.Log("Отражение");
+        // возврат в обратную сторону
+        _manager.SteamMove(unit);
     }
 
     private void PlantEffect(Character unit)

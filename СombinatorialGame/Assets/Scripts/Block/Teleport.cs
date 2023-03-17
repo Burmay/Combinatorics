@@ -6,4 +6,5 @@ public class Teleport : Block
 {
     bool condition = true;
     public bool Condition => condition;
+    // ключ или убить всех врагов
 }

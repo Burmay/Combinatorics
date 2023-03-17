@@ -5,14 +5,7 @@ using UnityEngine;
 public class SceneConfigurator : MonoBehaviour
 {
     private int _lvlNumber;
-    private LvlData _lvlData;
-
-    public void Start()
-    {
-        _lvlNumber = 1;
-        _lvlData = new LvlData();
-        _lvlData.numberEnemy = 1;
-    }
+    [SerializeField] private LvlData _lvlData;
 
     public void UpLvl()
     {
@@ -25,8 +18,3 @@ public class SceneConfigurator : MonoBehaviour
     public int GetHeight => _lvlData._height;
 }
 
-public class LvlData
-{
-    [SerializeField] public int _width = 6, _height = 6;
-    [SerializeField] public int numberEnemy;
-}

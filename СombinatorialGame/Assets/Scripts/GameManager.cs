@@ -30,6 +30,7 @@ public class GameManager : MonoBehaviour
     public GameState _state;
     private int _round = 0;
     private Player _player;
+    private Vector2 _lastMove;
 
 
     private void Start()
@@ -127,6 +128,7 @@ public class GameManager : MonoBehaviour
     {
         if (CheckOpportunityShift(direction) == false || _state != GameState.WatingInput) { return; }
         ChangeState(GameState.Moving);
+        _lastMove = direction;
         Invoke("SpawnRandomElement", _trevelBlockTime);
         bool collision;
         var seqence = DOTween.Sequence();
@@ -148,7 +150,7 @@ public class GameManager : MonoBehaviour
                     Node possibleNode = GetNodeAtPosition(next.Pos + new Vector2(direction.x, direction.y * _coefficientCells)); // смотрим, существует ли вообще нода на +1 в направлении смещения
                     if (possibleNode != null) // нет? Проехали, оставили блок в покое
                     {
-                        if (possibleNode.occupiedBlock != null && _collision.CollisionResult(block, possibleNode.occupiedBlock, _maxOrederElenet) && possibleNode.occupiedBlock.mergingBlock == null) // коллизия есть?
+                        if (possibleNode.occupiedBlock != null && _collision.CollisionResult(block, possibleNode.occupiedBlock, _maxOrederElenet) && possibleNode.occupiedBlock.mergingBlock == null && distance > 0) // коллизия есть?
                         {
                             // !!!! запись для обработки столкновения
                             block.mergingBlock = possibleNode.occupiedBlock;
@@ -161,7 +163,7 @@ public class GameManager : MonoBehaviour
                     }
                 } while (next != block.node && distance > 0 && collision == false); // повторяем, пока не будет любого препядствия
 
-                if(block is Player || block is Enemy) { Character character = block as Character; if(character.stun) {character.StunOff(); } }
+                CheckEffect(block);
 
                 if ((Vector2)block.transform.position != block.node.Pos) // если смещение есть, двигаем в конечную
                 {
@@ -188,16 +190,67 @@ public class GameManager : MonoBehaviour
             SetLevelsBlocks();
             if (_state == GameState.Win) { Win(); }
             else if (_state == GameState.Lose) { Lose(); }
-        });
+        }); // при багах не отрабатывает
 
         Invoke("EndMovingState", _strokeLag);
+    }
+
+    public void SteamMove(Block block)
+    {
+        Vector2 dir = new Vector2(_lastMove.x * -1, _lastMove.y * -1);
+
+        bool collision = false;
+        var seqence = DOTween.Sequence();
+        int distance = block.mobile + 1;
+        if (distance > 0 && CheckPossibilityOfMove(block))
+        {
+            Node next = block.node; // получаем линк на ноду в отдельный кластер
+            do // начиная с крайних нод, пробуем их смещать
+            {
+                distance--;
+                block.ChangeNode(next); // если в прошлом цикле позиция изменилась, обновляем данные ячейки
+
+
+                Node possibleNode = GetNodeAtPosition(next.Pos + new Vector2(dir.x, dir.y * _coefficientCells)); // смотрим, существует ли вообще нода на +1 в направлении смещения
+                if (possibleNode != null) // нет? Проехали, оставили блок в покое
+                {
+                    if (possibleNode.occupiedBlock != null && _collision.CollisionResult(block, possibleNode.occupiedBlock, _maxOrederElenet) && possibleNode.occupiedBlock.mergingBlock == null && distance > 0) // коллизия есть?
+                    {
+                        // !!!! запись для обработки столкновения
+                        block.mergingBlock = possibleNode.occupiedBlock;
+                        next = possibleNode;
+                        collision = true;
+                        block.ChangeNode(next);
+                    }
+
+                    else if (possibleNode.occupiedBlock == null) { next = possibleNode; } // место уже занято? Нет - меняем NEXT и идём дальше
+                }
+            } while (next != block.node && distance > 0 && collision == false); // повторяем, пока не будет любого препядствия
+
+            CheckEffect(block);
+
+            if ((Vector2)block.transform.position != block.node.Pos) // если смещение есть, двигаем в конечную
+            {
+                if (block is Character)
+                {
+                    Character character = block as Character;
+                    character.Move();
+                }
+                block.transform.DOMove(block.node.Pos, _trevelBlockTime);
+            }
+        }
     }
 
     private bool CheckPossibilityOfMove(Block block)
     {
         if (block is Stalker) { StalkerShift(); return false; }
-        else if (block is Character) { Character character = block as Character; if (character.stun) return false; else return true; }
+        else if (block is Character) { Character character = block as Character; if (character.stun) { character.StunOff(); return false; } else return true; }
         else return true;
+    }
+
+    private void CheckEffect(Block block)
+    {
+        
     }
 
     private void StalkerShift()
@@ -226,20 +279,31 @@ public class GameManager : MonoBehaviour
     public void EnablingEnvironment()
     {
         SpawnBlock(_playerPrefab, 1);
+        // CloseRow
         SpawnBlock(_teleportPrefab, 1);
         SpawnBlock(_enemyPrefab, _configurator.GetNumberEnemy);
     }
 
     private void SpawnBlock(Block blockPrefab, int amount)
     {
-        var freeNodes = _nodesList.Where(n => n.occupiedBlock == null).OrderBy(b => UnityEngine.Random.value);
+        var freeNodes = _nodesList.Where(n => n.occupiedBlock == null).Where(n => n.generationAvalible == true).OrderBy(b => UnityEngine.Random.value);
         foreach (var node in freeNodes.Take(amount))
         {
             var block = Instantiate(blockPrefab, node.Pos, Quaternion.identity);
             block.Init(this);
             block.ChangeNode(node);
             _blocksList.Add(block);
+
+            if(block is Player) { CloseRow(node); }
         }
+    }
+
+    private void CloseRow(Node nodeToClose)
+    {
+        foreach(Node node in _nodesList)
+        {
+            if(node.Pos.x == nodeToClose.Pos.x || node.Pos.y == nodeToClose.Pos.y) { node.generationAvalible = false; }
+        } 
     }
 
     private List<Block> SortingBlocks(Vector2 direction)
@@ -278,7 +342,7 @@ public class GameManager : MonoBehaviour
         if(freeNodes.Count() == 1)
         {
             // End game
-            _sceneBuilder.DestroyLvl();
+            Lose();
             return;
         }
     }
