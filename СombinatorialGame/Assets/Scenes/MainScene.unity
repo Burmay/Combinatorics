@@ -132,7 +132,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 639512018}
-  - component: {fileID: 639512023}
   - component: {fileID: 639512022}
   - component: {fileID: 639512017}
   - component: {fileID: 639512020}
@@ -169,6 +168,8 @@ MonoBehaviour:
   _playerPrefab: {fileID: 9028734972248818491, guid: 16229bdca70081545a6ce6afb5d9db01, type: 3}
   _enemyPrefab: {fileID: 3878425175811258145, guid: 4ae591c330eb53644b94cd7e48929018, type: 3}
   _teleportPrefab: {fileID: 2888061008461680670, guid: 1a513cb3d2579074cbb4573707164be6, type: 3}
+  _keyPrefab: {fileID: 8121006801385980844, guid: c6906dc1cfe363d489e32b60fc1be6a8, type: 3}
+  _stalkerPrefab: {fileID: 5306200401815183317, guid: c81172d1ab83d9645a776c1026a7552a, type: 3}
   _coefficientCells: 0.87
   _trevelBlockTime: 0.5
   _sceneBuilder: {fileID: 639512020}
@@ -177,9 +178,9 @@ MonoBehaviour:
   _playerStartPosition: {x: 0, y: 0}
   _elementsPerStroke: 1
   _strokeLag: 1
-  _startElementCount: 2
   _maxOrederElenet: 2
   _state: 0
+  _lastMove: {x: 0, y: 0}
 --- !u!4 &639512018
 Transform:
   m_ObjectHideFlags: 0
@@ -239,7 +240,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 185436210027ce94c9965c421b8f6e7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _manager: {fileID: 639512017}
+  manager: {fileID: 639512017}
 --- !u!114 &639512022
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -252,23 +253,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 882b189657722db4cb4518f23014f7da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _lvlData: {fileID: 639512023}
---- !u!114 &639512023
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 639512016}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4cc8e2bc47e4d244ebfcabeb556b5020, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _width: 4
-  _height: 4
-  numberElement: 0
-  numberEnemy: 1
+  _width: 5
+  _height: 5
+  _anchor: 3
+  _downWard: 0
+  _upWard: 2
+  _numberElement: 2
+  _numberEnemy: 1
+  _condition: 0
+  _squareField: 0
+  _fixSquareSize: 0
+  _stalkerMode: 1
 --- !u!1 &1880856856
 GameObject:
   m_ObjectHideFlags: 0

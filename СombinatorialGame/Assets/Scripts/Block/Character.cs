@@ -6,7 +6,7 @@ public class Character : Block
 {
     [SerializeField] protected Animator animator;
     [SerializeField] protected int hp;
-    protected bool shield;
+    [SerializeField] protected bool shield;
     public bool stun;
 
     public override Block Init(GameManager manager)

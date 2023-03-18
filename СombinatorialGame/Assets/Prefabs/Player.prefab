@@ -121,6 +121,8 @@ MonoBehaviour:
   node: {fileID: 0}
   mobile: 100
   mergingBlock: {fileID: 0}
+  type: 7
   animator: {fileID: 1897877556294832549}
   hp: 1
-  manager: {fileID: 0}
+  shield: 0
+  stun: 0

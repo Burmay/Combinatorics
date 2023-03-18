@@ -7,7 +7,7 @@ public class Player : Character
     void Start()
     {
         animator.GetComponent<Animator>();
-        base.type = BlockType.Player;
+        manager.SetPlayerLink = this;
     }
 
     public override Block Init(GameManager manager)
@@ -27,7 +27,6 @@ public class Player : Character
     protected override void Die()
     {
         Debug.Log("Перс сдох");
-        Debug.Log(manager);
         base.Die();
         manager._state = GameState.Lose;
     }

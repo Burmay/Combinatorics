@@ -4,9 +4,10 @@ using UnityEngine;
 
 public class CollisionHandler : MonoBehaviour
 {
-    [SerializeField] private GameManager _manager;
+    [SerializeField] private GameManager manager;
     private Element _fireOnePrefab, _waterOnePrefab, _stoneOnePrefab, _fireTwoPrefab, _waterTwoPrefab, _stomeTwoPrefab, _lavaPrefab, _steamPrefab, _plantPrefab;
     System.Random random = new System.Random();
+    Teleport _teleport;
 
     public void SetElementsPrefab(Element fire, Element water, Element stone, Element fireTwo, Element waterTwo, Element stoneTwo, Element lava, Element steam, Element plant)
     {
@@ -22,19 +23,26 @@ public class CollisionHandler : MonoBehaviour
 
     }
 
+    public void SetTeleportLink(Teleport teleport)
+    {
+        _teleport = teleport;
+    }
+
     // Проверка, есть ли вообще столкновение
 
     public bool CollisionResult(Block incoming, Block standing, int maxOrderElement)
     {
         if (incoming is Element && standing is Element) { return CollisionElementsResult(incoming, standing, maxOrderElement); }
-        else if (incoming is Player && standing is Enemy) { return CollosionEnemyWithPlayer(incoming); }
-        else if (incoming is Enemy && standing is Player) { return CollosionEnemyWithPlayer(standing); }
+        else if (incoming is Player && (standing is Enemy || standing is Stalker)) { return CollosionEnemyWithPlayer(incoming); }
+        else if ((incoming is Enemy || incoming is Stalker) && standing is Player) { return CollosionEnemyWithPlayer(standing); }
         else if (incoming is Enemy && standing is Enemy) { return false; }
         else if (incoming is Player && standing is Teleport) { return CollisionWithTeport(standing); }
         else if (incoming is Teleport && standing is Player) { return CollisionWithTeport(incoming); }
         else if (incoming is Teleport && !(standing is Player) || standing is Teleport && !(incoming is Player)) { return false; }
         else if (incoming is Element && !(standing is Element)) { return CollisionUnitWithElement(standing, incoming); }
         else if (standing is Element && !(incoming is Element)) { return CollisionUnitWithElement(incoming, standing); }
+        else if (standing is Key && incoming is Player || standing is Player && incoming is Key) { return true; }
+        else if (standing is Key && !(incoming is Player) || incoming is Key && !(standing is Player)) { return false; }
         else { Debug.Log("Произошла странная коллизия " + incoming + " " + standing); return false; } // дебаг-строчка
     }
 
@@ -61,7 +69,7 @@ public class CollisionHandler : MonoBehaviour
     private bool CollosionEnemyWithPlayer(Block block)
     {
         Player player = block as Player;
-        if (player.Shield) { player.ShieldOff(); return false; }
+        if (player.Shield == true) { player.ShieldOff(); return false; }
         else return true;
     }
 
@@ -75,7 +83,7 @@ public class CollisionHandler : MonoBehaviour
         }
         else
         {
-            if (el.type == BlockType.Stone || el.type == BlockType.Lava) { return false; }
+            if (el.type == BlockType.Stone) { return false; }
             else { return true; }
         }
     }
@@ -93,7 +101,9 @@ public class CollisionHandler : MonoBehaviour
         if (standing is Element && incoming is Element) { MegreElements(incoming as Element, standing as Element); }
         else if (standing is Character && incoming is Element || incoming is Character && standing is Element) { MergeElementWithUnit(standing, incoming); }
         else if (standing is Character && incoming is Character) { MergeUnit(standing, incoming); }
-        else if (incoming is Teleport || standing is Teleport) { _manager.ChangeState(GameState.Win); }
+        else if (incoming is Teleport || standing is Teleport) { manager.ChangeState(GameState.Win); }
+        else if (standing is Key) { MergePlayerWithKey(standing); }
+        else { Debug.Log("Ошибка в определении сценария коллизии"); Debug.Log(standing + " и " + incoming); }
     }
 
     // Определение резльтата столкновения двух элементов и спавн нового типа
@@ -103,16 +113,16 @@ public class CollisionHandler : MonoBehaviour
         if (incoming.type == BlockType.Lava || standing.type == BlockType.Lava) { LavaDestroyElement(incoming, standing); }
         else
         {
-            _manager.SpawnElement(standing.node, GetNewElementsPrefab(standing, incoming));
-            _manager.RemoveBlock(standing);
-            _manager.RemoveBlock(incoming);
+            manager.SpawnElement(standing.node, GetNewElementsPrefab(standing, incoming));
+            manager.RemoveBlock(standing);
+            manager.RemoveBlock(incoming);
         }
     }
 
     private void LavaDestroyElement(Element incoming, Element standing)
     {
-        if (incoming.type == BlockType.Lava) { _manager.RemoveBlock(standing); }
-        else { _manager.RemoveBlock(incoming); }
+        if (incoming.type == BlockType.Lava) { manager.RemoveBlock(standing); }
+        else { manager.RemoveBlock(incoming); }
     }
 
     private BlockType GetElementsType(Block el1, Block el2)
@@ -155,9 +165,16 @@ public class CollisionHandler : MonoBehaviour
         else if (element.type == BlockType.Plant) { PlantEffect(unit); }
         else if (element.type == BlockType.Water) { WaterEffect(unit); }
         else if (element.type == BlockType.Steam) { SteamEffect(unit); }
+        else if (element.type == BlockType.Lava) { LavaEffect(unit); }
 
-        
-        _manager.RemoveBlock(element);
+        manager.RemoveBlock(element);
+    }
+
+    // игрок и ключ
+    private void MergePlayerWithKey(Block key)
+    {
+        manager.RemoveBlock(key);
+        _teleport.Condition = true;
     }
 
     // Результат столкновения врага с юнитом
@@ -165,7 +182,7 @@ public class CollisionHandler : MonoBehaviour
     {
         Player player;
         if(standing is Player) { player = standing as Player; } else { player = incoming as Player; }
-        player.SubtractHP(1);
+        player.SubtractHP(int.MaxValue);
     }
 
     // эффекты от столкновения с элементами
@@ -191,9 +208,8 @@ public class CollisionHandler : MonoBehaviour
 
     private void SteamEffect(Character unit)
     {
-        Debug.Log("Отражение");
         // возврат в обратную сторону
-        _manager.SteamMove(unit);
+        manager.ShiftForOne(unit, new Vector2(manager._lastMove.x * -1, manager._lastMove.y * -1));
     }
 
     private void PlantEffect(Character unit)

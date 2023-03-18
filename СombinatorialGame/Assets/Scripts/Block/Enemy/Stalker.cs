@@ -4,5 +4,8 @@ using UnityEngine;
 
 public class Stalker : Enemy
 {
-    
+    private void Start()
+    {
+        manager.SetStalkerLink = this;
+    }
 }

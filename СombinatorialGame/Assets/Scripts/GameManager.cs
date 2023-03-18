@@ -11,17 +11,18 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Player _playerPrefab;
     [SerializeField] private Enemy _enemyPrefab;
     [SerializeField] private Teleport _teleportPrefab;
+    [SerializeField] private Key _keyPrefab;
+    [SerializeField] private Stalker _stalkerPrefab;
 
     [SerializeField] private float _coefficientCells;
     [SerializeField] private float _trevelBlockTime;
     [SerializeField] private SceneBuilder _sceneBuilder;
     [SerializeField] private CollisionHandler _collision;
-    [SerializeField] private SceneConfigurator _configurator;
+    [SerializeField] private ProceduralSceneConfigurator _configurator;
     [SerializeField] private Vector2 _playerStartPosition;
 
     [SerializeField] private int _elementsPerStroke;
     [SerializeField] private float _strokeLag;
-    [SerializeField] private int _startElementCount;
     [SerializeField] private int _maxOrederElenet;
 
     private List<Block> _blocksList;
@@ -30,7 +31,10 @@ public class GameManager : MonoBehaviour
     public GameState _state;
     private int _round = 0;
     private Player _player;
-    private Vector2 _lastMove;
+    public Vector2 _lastMove;
+    private ConditionExitLvl _conditionExit;
+    private Teleport _teleport;
+    private Stalker _stalker;
 
 
     private void Start()
@@ -38,15 +42,18 @@ public class GameManager : MonoBehaviour
         ChangeState(GameState.GenerateLvl);
     }
 
+    public Player SetPlayerLink { set { _player = value; } }
+    public Stalker SetStalkerLink { set { _stalker = value; } }
+
     private void Update()
     {
         //Debug.Log(_state);
 
-        if (Input.GetKey(KeyCode.D)) { PrevShift(Vector2.right); }
-        else if (Input.GetKey(KeyCode.A)) { PrevShift(Vector2.left); }
-        else if (Input.GetKey(KeyCode.W)) { PrevShift(Vector2.up); }
-        else if (Input.GetKey(KeyCode.S)) { PrevShift(Vector2.down); }
-        else if(_state == GameState.PrevShift) { Debug.Log("Вернуться надобно"); ChangeState(GameState.WatingInput); } // вернуть на позицию
+        //if (Input.GetKey(KeyCode.D)) { PrevShift(Vector2.right); }
+        //else if (Input.GetKey(KeyCode.A)) { PrevShift(Vector2.left); }
+        //else if (Input.GetKey(KeyCode.W)) { PrevShift(Vector2.up); }
+        //else if (Input.GetKey(KeyCode.S)) { PrevShift(Vector2.down); }
+        //else if(_state == GameState.PrevShift) { Debug.Log("Вернуться надобно"); ChangeState(GameState.WatingInput); } // вернуть на позицию
 
         if (Input.GetKeyDown(KeyCode.RightArrow)) { Shift(Vector2.right); }
         else if (Input.GetKeyDown(KeyCode.LeftArrow)) { Shift(Vector2.left); }
@@ -64,20 +71,16 @@ public class GameManager : MonoBehaviour
         {
             case GameState.GenerateLvl:
                 GenerateLvl();
-                this.Wait(3f, () =>
-                {
-                    SpawnRandomElement(_startElementCount);
-                });
                 break;
             case GameState.WatingInput:
                 break;
             case GameState.Moving:
                 //SaveMove();
+                _round++;
                 break;
             case GameState.Win:
                 break;
             case GameState.Lose:
-                Lose();
                 break;
         }
     }
@@ -163,7 +166,7 @@ public class GameManager : MonoBehaviour
                     }
                 } while (next != block.node && distance > 0 && collision == false); // повторяем, пока не будет любого препядствия
 
-                CheckEffect(block);
+                // тут можно чекать эффекты на блоках
 
                 if ((Vector2)block.transform.position != block.node.Pos) // если смещение есть, двигаем в конечную
                 {
@@ -185,19 +188,42 @@ public class GameManager : MonoBehaviour
             foreach (var block in orderedBlocks.Where(b => b.mergingBlock != null))
             {
                 _collision.MergeBlocks(block.mergingBlock, block);
+                if(block != null) { block.mergingBlock = null; }
             }
 
+            if(_configurator.StalkerMode == true) StalkerMove();
             SetLevelsBlocks();
-            if (_state == GameState.Win) { Win(); }
-            else if (_state == GameState.Lose) { Lose(); }
+            CheckWinLose();
         }); // при багах не отрабатывает
 
         Invoke("EndMovingState", _strokeLag);
     }
 
-    public void SteamMove(Block block)
+    private bool CheckKillAllEnemy()
     {
-        Vector2 dir = new Vector2(_lastMove.x * -1, _lastMove.y * -1);
+        foreach(Block block in _blocksList)
+        {
+            if(block is Enemy || block is Stalker) { return false; }
+        }
+        return true;
+    }
+
+    private void CheckWinLose()
+    {
+        if (_conditionExit == ConditionExitLvl.KillAllEnemy)
+        {
+            if (CheckKillAllEnemy() == true) { _teleport.Condition = true; }
+        }
+        if(CheckOpportunityShift(new Vector2(0, 1)) == false && CheckOpportunityShift(new Vector2(1, 0)) == false && CheckOpportunityShift(new Vector2(-1, 0)) == false && CheckOpportunityShift(new Vector2(0, -1)) == false)
+        {
+            ChangeState(GameState.Lose);
+        }
+        if (_state == GameState.Win) { Win(); }
+        else if (_state == GameState.Lose) { Lose(); }
+    }
+
+    public void ShiftForOne(Block block, Vector2 dir)
+    {
 
         bool collision = false;
         var seqence = DOTween.Sequence();
@@ -227,7 +253,7 @@ public class GameManager : MonoBehaviour
                 }
             } while (next != block.node && distance > 0 && collision == false); // повторяем, пока не будет любого препядствия
 
-            CheckEffect(block);
+            // тут можно чекать эффекты на блоках
 
             if ((Vector2)block.transform.position != block.node.Pos) // если смещение есть, двигаем в конечную
             {
@@ -238,24 +264,68 @@ public class GameManager : MonoBehaviour
                 }
                 block.transform.DOMove(block.node.Pos, _trevelBlockTime);
             }
+
+            seqence.OnComplete(() => // по завершению движения при коллизии, обрабаываем столкновение
+            {
+                if(block.mergingBlock != null && block != null) { _collision.MergeBlocks(block.mergingBlock, block); }
+                if (block != null) { block.mergingBlock = null; }
+
+                SetLevelsBlocks();
+                CheckWinLose();
+            });
         }
     }
 
     private bool CheckPossibilityOfMove(Block block)
     {
-        if (block is Stalker) { StalkerShift(); return false; }
+        if (block is Stalker) { return false; }
         else if (block is Character) { Character character = block as Character; if (character.stun) { character.StunOff(); return false; } else return true; }
         else return true;
     }
 
-    private void CheckEffect(Block block)
+    private void StalkerMove()
     {
-        
+        Vector2 difference = _player.Pos - _stalker.Pos;
+        Vector2 FirstStep = new Vector2(difference.x, 0).normalized;
+        Vector2 TwoStep = new Vector2(0, difference.y).normalized;
+        if(Math.Abs(difference.x) > Math.Abs(difference.y))
+        {
+            if(StalkerTryStep(FirstStep) == true)
+            {
+                ShiftForOne(_stalker, FirstStep);
+            }
+            else
+            {
+                if (StalkerTryStep(TwoStep) == true)
+                {
+                    ShiftForOne(_stalker, TwoStep);
+                }
+            }
+        }
+        else if (Math.Abs(difference.x) < Math.Abs(difference.y))
+        {
+            if (StalkerTryStep(TwoStep) == true)
+            {
+                ShiftForOne(_stalker, TwoStep);
+            }
+            else
+            {
+                if (StalkerTryStep(FirstStep) == true)
+                {
+                    ShiftForOne(_stalker, FirstStep);
+                } 
+            }
+        }
+
+        Debug.Log(FirstStep + " " + TwoStep);
+        Debug.Log(StalkerTryStep(FirstStep));
+        Debug.Log(StalkerTryStep(TwoStep));
+
     }
-
-    private void StalkerShift()
+    private bool StalkerTryStep(Vector2 dir)
     {
-
+        Node possibleNode = GetNodeAtPosition(_stalker.Pos + new Vector2(dir.x, dir.y * _coefficientCells));
+        if(possibleNode != null && possibleNode.occupiedBlock == null) { return true; } else { return false; }
     }
 
     private void EndMovingState()
@@ -273,15 +343,25 @@ public class GameManager : MonoBehaviour
         _nodesList = _sceneBuilder.GenerateLvl();
         _collision.SetElementsPrefab(_fireOnePrefab, _waterOnePrefab, _stoneOnePrefab, _fireTwoPrefab, _waterTwoPrefab, _stomeTwoPrefab, _lavaPrefab, _steamPrefab, _plantPrefab);
         _round = 0;
+        _conditionExit = _configurator.GetConditionExit;
         ChangeState(GameState.WatingInput);
+    }
+
+    public ConditionExitLvl GetConditionExit(Teleport teleport)
+    {
+        _teleport = teleport;
+        _collision.SetTeleportLink(_teleport);
+        return _conditionExit;
     }
 
     public void EnablingEnvironment()
     {
         SpawnBlock(_playerPrefab, 1);
-        // CloseRow
         SpawnBlock(_teleportPrefab, 1);
-        SpawnBlock(_enemyPrefab, _configurator.GetNumberEnemy);
+        if(_conditionExit == ConditionExitLvl.GetKey) { SpawnBlock(_keyPrefab, 1); }
+        if(_configurator.StalkerMode == true) { SpawnBlock(_stalkerPrefab, 1); }
+        else { SpawnBlock(_enemyPrefab, _configurator.GetNumberEnemy); }
+        SpawnRandomElement(_configurator.GetNumberElement);
     }
 
     private void SpawnBlock(Block blockPrefab, int amount)
@@ -341,9 +421,7 @@ public class GameManager : MonoBehaviour
 
         if(freeNodes.Count() == 1)
         {
-            // End game
-            Lose();
-            return;
+            Debug.Log("ноды кончились");
         }
     }
 
@@ -394,7 +472,7 @@ public class GameManager : MonoBehaviour
     private void Lose()
     {
         Debug.Log("Lose");
-        DestroyScene();
+        //Invoke("DestroyScene", 1f);
     }
 
     private void DestroyScene()
@@ -444,6 +522,8 @@ public enum BlockType
     Plant,
     Player,
     Enemy,
+    Stalker,
+    Key,
     Teleport
 }
 

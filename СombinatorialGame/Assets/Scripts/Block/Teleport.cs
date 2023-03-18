@@ -4,7 +4,14 @@ using UnityEngine;
 
 public class Teleport : Block
 {
-    bool condition = true;
-    public bool Condition => condition;
-    // ключ или убить всех врагов
+    public bool Condition { get; set; }
+    private ConditionExitLvl _conditionExit;
+
+    private void Start()
+    {
+        _conditionExit = manager.GetConditionExit(this);
+        if (_conditionExit == ConditionExitLvl.No) { Condition = true; }
+        else { Condition = false; }
+    }
+
 }

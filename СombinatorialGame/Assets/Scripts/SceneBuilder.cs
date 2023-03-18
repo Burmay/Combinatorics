@@ -10,7 +10,7 @@ public class SceneBuilder : MonoBehaviour
     [SerializeField] private SpriteRenderer _boardPrefab;
     [SerializeField] private float _coefficientCells;
     [SerializeField] private GameManager _manager;
-    [SerializeField] private SceneConfigurator _configurator;
+    [SerializeField] private ProceduralSceneConfigurator _configurator;
     [SerializeField] private float speedUnfoldingNodes;
     private List<Node> _nodesList;
     private int _currentNodeIndex;
