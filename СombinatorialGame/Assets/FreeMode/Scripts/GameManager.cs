@@ -14,8 +14,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Key _keyPrefab;
     [SerializeField] private Stalker _stalkerPrefab;
 
-    [SerializeField] private float _coefficientCells;
-    [SerializeField] private float _trevelBlockTime;
+    [SerializeField] private float _coefficientCells, _trevelBlockTime;
     [SerializeField] private SceneBuilder _sceneBuilder;
     [SerializeField] private CollisionHandler _collision;
     [SerializeField] private ProceduralSceneConfigurator _configurator;
@@ -35,15 +34,22 @@ public class GameManager : MonoBehaviour
     private ConditionExitLvl _conditionExit;
     private Teleport _teleport;
     private Stalker _stalker;
+    private float _probabilityFireEl, _probabilityStoneEl, _probabilityWaterEl;
+    private System.Random random;
 
 
     private void Start()
     {
+        random = new System.Random();
         ChangeState(GameState.GenerateLvl);
     }
 
     public Player SetPlayerLink { set { _player = value; } }
     public Stalker SetStalkerLink { set { _stalker = value; } }
+    public void SetProbabilityEl(float fire, float stone, float water)
+    {
+        _probabilityFireEl = fire; _probabilityStoneEl = stone; _probabilityWaterEl = water;
+    }
 
     private void Update()
     {
@@ -141,7 +147,7 @@ public class GameManager : MonoBehaviour
         {
             collision = false;
             int distance = block.mobile + 1;
-            if (distance > 0 && CheckPossibilityOfMove(block))
+            if (distance > 0 && CheckPossibilityOfMove(block) && !(block is Stalker))
             {
                 Node next = block.node; // получаем линк на ноду в отдельный кластер
                 do // начиная с крайних нод, пробуем их смещать
@@ -191,9 +197,9 @@ public class GameManager : MonoBehaviour
                 if(block != null) { block.mergingBlock = null; }
             }
 
-            if(_configurator.StalkerMode == true) StalkerMove();
             SetLevelsBlocks();
             CheckWinLose();
+            if (_stalker != null) StalkerMove();
         }); // при багах не отрабатывает
 
         Invoke("EndMovingState", _strokeLag);
@@ -228,7 +234,7 @@ public class GameManager : MonoBehaviour
         bool collision = false;
         var seqence = DOTween.Sequence();
         int distance = block.mobile + 1;
-        if (distance > 0 && CheckPossibilityOfMove(block))
+        if (distance > 0)
         {
             Node next = block.node; // получаем линк на ноду в отдельный кластер
             do // начиная с крайних нод, пробуем их смещать
@@ -240,8 +246,10 @@ public class GameManager : MonoBehaviour
                 Node possibleNode = GetNodeAtPosition(next.Pos + new Vector2(dir.x, dir.y * _coefficientCells)); // смотрим, существует ли вообще нода на +1 в направлении смещения
                 if (possibleNode != null) // нет? Проехали, оставили блок в покое
                 {
-                    if (possibleNode.occupiedBlock != null && _collision.CollisionResult(block, possibleNode.occupiedBlock, _maxOrederElenet) && possibleNode.occupiedBlock.mergingBlock == null && distance > 0) // коллизия есть?
+                    //if(possibleNode.occupiedBlock != null) { Debug.Log(_collision.CollisionResult(block, possibleNode.occupiedBlock, _maxOrederElenet)); }
+                    if (possibleNode.occupiedBlock != null && _collision.CollisionResult(block, possibleNode.occupiedBlock, _maxOrederElenet) && distance > 0) // коллизия есть?
                     {
+                        //if(block is Stalker) { Debug.Log("есть коллизия"); }
                         // !!!! запись для обработки столкновения
                         block.mergingBlock = possibleNode.occupiedBlock;
                         next = possibleNode;
@@ -278,13 +286,13 @@ public class GameManager : MonoBehaviour
 
     private bool CheckPossibilityOfMove(Block block)
     {
-        if (block is Stalker) { return false; }
-        else if (block is Character) { Character character = block as Character; if (character.stun) { character.StunOff(); return false; } else return true; }
+        if (block is Character) { Character character = block as Character; if (character.stun) { character.StunOff(); return false; } else return true; }
         else return true;
     }
 
     private void StalkerMove()
     {
+        if (_player == null) return;
         Vector2 difference = _player.Pos - _stalker.Pos;
         Vector2 FirstStep = new Vector2(difference.x, 0).normalized;
         Vector2 TwoStep = new Vector2(0, difference.y).normalized;
@@ -316,16 +324,19 @@ public class GameManager : MonoBehaviour
                 } 
             }
         }
-
-        Debug.Log(FirstStep + " " + TwoStep);
-        Debug.Log(StalkerTryStep(FirstStep));
-        Debug.Log(StalkerTryStep(TwoStep));
+        Debug.Log(FirstStep + "   " + TwoStep);
 
     }
     private bool StalkerTryStep(Vector2 dir)
     {
         Node possibleNode = GetNodeAtPosition(_stalker.Pos + new Vector2(dir.x, dir.y * _coefficientCells));
-        if(possibleNode != null && possibleNode.occupiedBlock == null) { return true; } else { return false; }
+        if(possibleNode != null)
+        {
+            if(possibleNode.occupiedBlock == null) { return true; }
+            else if(possibleNode.occupiedBlock is Player) { return true; }
+            else { return false; }
+        }
+        else { return false; }
     }
 
     private void EndMovingState()
@@ -412,9 +423,10 @@ public class GameManager : MonoBehaviour
 
         foreach(var node in freeNodes.Take(amount))
         {
-            float rand = UnityEngine.Random.value;
-            if(rand > 0.66f) { SpawnElement(node, _fireOnePrefab); }
-            else if(rand < 0.33f) { SpawnElement(node, _stoneOnePrefab); }
+            int rand = random.Next(0, (int)((_probabilityFireEl + _probabilityStoneEl + _probabilityWaterEl) * 1000));
+
+            if(rand < _probabilityFireEl * 1000) { SpawnElement(node, _fireOnePrefab); }
+            else if(rand < (_probabilityFireEl + _probabilityStoneEl) * 1000) { SpawnElement(node, _stoneOnePrefab); }
             else { SpawnElement(node, _waterOnePrefab); }
         }
 

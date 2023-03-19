@@ -253,6 +253,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 882b189657722db4cb4518f23014f7da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  manager: {fileID: 639512017}
   _width: 5
   _height: 5
   _anchor: 3
@@ -264,6 +265,9 @@ MonoBehaviour:
   _squareField: 0
   _fixSquareSize: 0
   _stalkerMode: 1
+  _probabilityFireEl: 0
+  _probabilityStoneEl: 0
+  _probabilityWaterEl: 0
 --- !u!1 &1880856856
 GameObject:
   m_ObjectHideFlags: 0

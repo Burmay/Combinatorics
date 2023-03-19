@@ -98,9 +98,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   node: {fileID: 0}
-  mobile: 0
+  mobile: 1
   mergingBlock: {fileID: 0}
-  type: 9
+  type: 8
   animator: {fileID: 0}
   hp: 2
   shield: 1

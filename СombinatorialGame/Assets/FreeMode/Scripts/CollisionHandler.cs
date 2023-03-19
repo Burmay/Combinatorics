@@ -33,8 +33,8 @@ public class CollisionHandler : MonoBehaviour
     public bool CollisionResult(Block incoming, Block standing, int maxOrderElement)
     {
         if (incoming is Element && standing is Element) { return CollisionElementsResult(incoming, standing, maxOrderElement); }
-        else if (incoming is Player && (standing is Enemy || standing is Stalker)) { return CollosionEnemyWithPlayer(incoming); }
-        else if ((incoming is Enemy || incoming is Stalker) && standing is Player) { return CollosionEnemyWithPlayer(standing); }
+        else if (incoming is Player && (standing is Enemy || standing is Stalker)) { return CollosionEnemyWithPlayer(incoming, standing); }
+        else if ((incoming is Enemy || incoming is Stalker) && standing is Player) { return CollosionEnemyWithPlayer(standing, incoming); }
         else if (incoming is Enemy && standing is Enemy) { return false; }
         else if (incoming is Player && standing is Teleport) { return CollisionWithTeport(standing); }
         else if (incoming is Teleport && standing is Player) { return CollisionWithTeport(incoming); }
@@ -66,10 +66,12 @@ public class CollisionHandler : MonoBehaviour
         }
     }
 
-    private bool CollosionEnemyWithPlayer(Block block)
+    private bool CollosionEnemyWithPlayer(Block pl, Block en)
     {
-        Player player = block as Player;
-        if (player.Shield == true) { player.ShieldOff(); return false; }
+        Player player = pl as Player;
+        Character enemy = en as Character;
+        if (enemy.Shield == true && player.Shield == true) { enemy.ShieldOff(); player.ShieldOff(); return false; }
+        else if (player.Shield == true) { player.ShieldOff(); return false; }
         else return true;
     }
 
@@ -159,6 +161,7 @@ public class CollisionHandler : MonoBehaviour
 
     private void MergeElementWithUnit(Block standing, Block incoming)
     {
+        Debug.Log(standing + " " + incoming);
         Element element; Character unit;
         if (standing is Element) { element = standing as Element; unit = incoming as Character; } else { element = incoming as Element; unit = standing as Character; }
         if (element.type == BlockType.Fire) { FireEffect(unit); } 
