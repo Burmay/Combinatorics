@@ -135,8 +135,8 @@ GameObject:
   - component: {fileID: 639512022}
   - component: {fileID: 639512017}
   - component: {fileID: 639512020}
-  - component: {fileID: 639512019}
   - component: {fileID: 639512021}
+  - component: {fileID: 639512023}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -179,6 +179,7 @@ MonoBehaviour:
   _elementsPerStroke: 1
   _strokeLag: 1
   _maxOrederElenet: 2
+  _isFree: 1
   _state: 0
   _lastMove: {x: 0, y: 0}
 --- !u!4 &639512018
@@ -196,18 +197,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &639512019
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 639512016}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2be161e3a0f7ed4408ac8968f9be2e3e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &639512020
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -265,9 +254,21 @@ MonoBehaviour:
   _squareField: 0
   _fixSquareSize: 0
   _stalkerMode: 1
-  _probabilityFireEl: 0
-  _probabilityStoneEl: 0
-  _probabilityWaterEl: 0
+  _probabilityFireEl: 1
+  _probabilityStoneEl: 1
+  _probabilityWaterEl: 1
+--- !u!114 &639512023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 639512016}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2be161e3a0f7ed4408ac8968f9be2e3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1880856856
 GameObject:
   m_ObjectHideFlags: 0

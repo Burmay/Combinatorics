@@ -6,6 +6,6 @@ public class SceneManagerMain : SceneManagerBase
 {
     public override void InitScenesRoll()
     {
-        this.sceneConfigRoll[FirstSceneConfig.SCENE_NAME] = new FirstSceneConfig();
+        this.sceneConfigRoll[FreeSceneConfig.SCENE_NAME] = new FreeSceneConfig();
     }
 }

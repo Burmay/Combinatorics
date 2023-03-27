@@ -24,6 +24,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float _strokeLag;
     [SerializeField] private int _maxOrederElenet;
 
+    [SerializeField] private bool _isFree;
+
     private List<Block> _blocksList;
     private List<Node> _nodesList;
     private List<LoadData> _loadDataList;
@@ -41,7 +43,6 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         random = new System.Random();
-        ChangeState(GameState.GenerateLvl);
     }
 
     public Player SetPlayerLink { set { _player = value; } }
@@ -346,15 +347,23 @@ public class GameManager : MonoBehaviour
 
     private void GenerateLvl()
     {
-        if(_blocksList == null)
+        _collision.SetElementsPrefab(_fireOnePrefab, _waterOnePrefab, _stoneOnePrefab, _fireTwoPrefab, _waterTwoPrefab, _stomeTwoPrefab, _lavaPrefab, _steamPrefab, _plantPrefab);
+        _round = 0;
+
+        if (_blocksList == null)
         {
             _blocksList = new List<Block>();
             _loadDataList = new List<LoadData>();
         }
+        if(_isFree == true)
+        {
+            _conditionExit = _configurator.GetConditionExit;
+        }
+        else
+        {
+
+        }
         _nodesList = _sceneBuilder.GenerateLvl();
-        _collision.SetElementsPrefab(_fireOnePrefab, _waterOnePrefab, _stoneOnePrefab, _fireTwoPrefab, _waterTwoPrefab, _stomeTwoPrefab, _lavaPrefab, _steamPrefab, _plantPrefab);
-        _round = 0;
-        _conditionExit = _configurator.GetConditionExit;
         ChangeState(GameState.WatingInput);
     }
 

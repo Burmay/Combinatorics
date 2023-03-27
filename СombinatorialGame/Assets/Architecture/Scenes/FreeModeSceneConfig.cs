@@ -3,18 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FirstSceneConfig : SceneConfig
+public class FreeSceneConfig : SceneConfig
 {
-    public const string SCENE_NAME = "MainScene";
+    public const string SCENE_NAME = "FreeMode";
 
     public override string sceneName => SCENE_NAME;
-
 
     // «десь создаютс€ все экземпл€ры классов дл€ конктерной сцены, списком
     public override Dictionary<Type, Interactor> CreateAllInteractors()
     {
         var interactorsRoll = new Dictionary<Type, Interactor>();
-
+        this.CreateInteractor<FreeModeInteractor>(interactorsRoll);
         // Int
 
         return interactorsRoll;
@@ -28,4 +27,5 @@ public class FirstSceneConfig : SceneConfig
 
         return repositoriesRoll;
     }
+
 }
