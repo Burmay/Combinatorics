@@ -20,7 +20,6 @@ public class CollisionHandler : MonoBehaviour
         _lavaPrefab = lava;
         _steamPrefab = steam;
         _plantPrefab = plant;
-
     }
 
     public void SetTeleportLink(Teleport teleport)
