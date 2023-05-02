@@ -48,6 +48,7 @@ public class SceneBuilder : MonoBehaviour
         Vector2 centerCoor = new Vector2((float)_width / 2 - 0.5f, (float)_height * _coefficientCells / 2 - 0.5f);
         var board = Instantiate(_boardPrefab, centerCoor, Quaternion.identity);
         board.size = new Vector2(_width, _height * _coefficientCells);
+        Camera.main.orthographicSize = _width > _height ? _width : _height;
         Camera.main.transform.position = new Vector3(centerCoor.x, centerCoor.y, -10);
         Camera.main.backgroundColor = new Color(0.109803922f, 0.066666666f, 0.235294118f, 1f);
     }

@@ -2,16 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using TMPro;
 
 public class ProceduralSceneConfigurator : MonoBehaviour
 {
-    private int _lvlNumber;
+    public int _lvlNumber { private set; get; }
     private System.Random random;
     [SerializeField] public GameManager manager;
     [SerializeField] private int _width, _height, _anchor, _downWard, _upWard, _numberElement, _numberEnemy;
     [SerializeField] private ConditionExitLvl _condition;
     [SerializeField] private bool _squareField, _fixSquareSize, _stalkerMode;
     [SerializeField] private float _probabilityFireEl, _probabilityStoneEl, _probabilityWaterEl;
+
+    private GameObject _levelCountTag;
+    private TMP_Text _levelCount;
 
     public void Awake()
     {
@@ -25,6 +29,10 @@ public class ProceduralSceneConfigurator : MonoBehaviour
     public void Start()
     {
         manager.SetProbabilityEl(_probabilityFireEl, _probabilityStoneEl, _probabilityWaterEl);
+        _levelCountTag = GameObject.FindGameObjectWithTag("LevelCount");
+        _levelCount = _levelCountTag.GetComponent<TMP_Text>();
+        Debug.Log(_levelCountTag);
+        Debug.Log(_levelCount);
     }
 
     private void CreateFieldSize()
@@ -48,6 +56,7 @@ public class ProceduralSceneConfigurator : MonoBehaviour
     public void UpLvl()
     {
         _lvlNumber++;
+        _levelCount.text = _lvlNumber.ToString();
         CreateFieldSize();
         if(_lvlNumber % 3 == 0) _upWard++;
         if(_lvlNumber % 5 == 0) _anchor++; _numberElement++;

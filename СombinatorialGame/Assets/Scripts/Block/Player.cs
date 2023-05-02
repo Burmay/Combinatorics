@@ -26,7 +26,6 @@ public class Player : Character
 
     protected override void Die()
     {
-        Debug.Log("Перс сдох");
         base.Die();
         manager._state = GameState.Lose;
     }

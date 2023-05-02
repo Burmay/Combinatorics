@@ -26,11 +26,17 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private bool _isFree;
 
+    GameObject loaderTag;
+    SceneLoader loader;
+
+    private JsonToFileStorageService storageService;
+    private const string key = "FreeModeKey";
+
     private List<Block> _blocksList;
     private List<Node> _nodesList;
     private List<LoadData> _loadDataList;
     public GameState _state;
-    private int _round = 0;
+    private int _round;
     private Player _player;
     public Vector2 _lastMove;
     private ConditionExitLvl _conditionExit;
@@ -43,6 +49,9 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         random = new System.Random();
+        storageService = new JsonToFileStorageService();
+        loaderTag = GameObject.FindWithTag("SceneLoader");
+        loader = loaderTag.GetComponent<SceneLoader>();
     }
 
     public Player SetPlayerLink { set { _player = value; } }
@@ -54,13 +63,12 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        //Debug.Log(_state);
 
         //if (Input.GetKey(KeyCode.D)) { PrevShift(Vector2.right); }
         //else if (Input.GetKey(KeyCode.A)) { PrevShift(Vector2.left); }
         //else if (Input.GetKey(KeyCode.W)) { PrevShift(Vector2.up); }
         //else if (Input.GetKey(KeyCode.S)) { PrevShift(Vector2.down); }
-        //else if(_state == GameState.PrevShift) { Debug.Log("Вернуться надобно"); ChangeState(GameState.WatingInput); } // вернуть на позицию
+        //else if(_state == GameState.PrevShift) {  ChangeState(GameState.WatingInput); } 
 
         if (Input.GetKeyDown(KeyCode.RightArrow)) { Shift(Vector2.right); }
         else if (Input.GetKeyDown(KeyCode.LeftArrow)) { Shift(Vector2.left); }
@@ -150,32 +158,29 @@ public class GameManager : MonoBehaviour
             int distance = block.mobile + 1;
             if (distance > 0 && CheckPossibilityOfMove(block) && !(block is Stalker))
             {
-                Node next = block.node; // получаем линк на ноду в отдельный кластер
-                do // начиная с крайних нод, пробуем их смещать
+                Node next = block.node; 
+                do
                 {
                     distance--;
-                    block.ChangeNode(next); // если в прошлом цикле позиция изменилась, обновляем данные ячейки
+                    block.ChangeNode(next); 
 
 
-                    Node possibleNode = GetNodeAtPosition(next.Pos + new Vector2(direction.x, direction.y * _coefficientCells)); // смотрим, существует ли вообще нода на +1 в направлении смещения
-                    if (possibleNode != null) // нет? Проехали, оставили блок в покое
+                    Node possibleNode = GetNodeAtPosition(next.Pos + new Vector2(direction.x, direction.y * _coefficientCells)); 
+                    if (possibleNode != null) 
                     {
                         if (possibleNode.occupiedBlock != null && _collision.CollisionResult(block, possibleNode.occupiedBlock, _maxOrederElenet) && possibleNode.occupiedBlock.mergingBlock == null && distance > 0) // коллизия есть?
                         {
-                            // !!!! запись для обработки столкновения
                             block.mergingBlock = possibleNode.occupiedBlock;
                             next = possibleNode;
                             collision = true;
                             block.ChangeNode(next);
                         }
 
-                        else if (possibleNode.occupiedBlock == null) { next = possibleNode; } // место уже занято? Нет - меняем NEXT и идём дальше
+                        else if (possibleNode.occupiedBlock == null) { next = possibleNode; }
                     }
-                } while (next != block.node && distance > 0 && collision == false); // повторяем, пока не будет любого препядствия
+                } while (next != block.node && distance > 0 && collision == false); 
 
-                // тут можно чекать эффекты на блоках
-
-                if ((Vector2)block.transform.position != block.node.Pos) // если смещение есть, двигаем в конечную
+                if ((Vector2)block.transform.position != block.node.Pos) 
                 {
                     if(block is Character)
                     {
@@ -185,12 +190,12 @@ public class GameManager : MonoBehaviour
                     block.transform.DOMove(block.node.Pos, _trevelBlockTime);
                 }
 
-                Vector2 movePoint = block.mergingBlock != null ? block.mergingBlock.node.Pos : block.node.Pos; // если есть коллизия, двигаем в её специфичную конечную
+                Vector2 movePoint = block.mergingBlock != null ? block.mergingBlock.node.Pos : block.node.Pos;
                 seqence.Insert(0, block.transform.DOMove(movePoint, _trevelBlockTime)); 
             }
         }
 
-        seqence.OnComplete(() => // по завершению движения при коллизии, обрабаываем столкновение
+        seqence.OnComplete(() => 
         {
             foreach (var block in orderedBlocks.Where(b => b.mergingBlock != null))
             {
@@ -201,7 +206,7 @@ public class GameManager : MonoBehaviour
             SetLevelsBlocks();
             CheckWinLose();
             if (_stalker != null) StalkerMove();
-        }); // при багах не отрабатывает
+        }); 
 
         Invoke("EndMovingState", _strokeLag);
     }
@@ -237,34 +242,31 @@ public class GameManager : MonoBehaviour
         int distance = block.mobile + 1;
         if (distance > 0)
         {
-            Node next = block.node; // получаем линк на ноду в отдельный кластер
-            do // начиная с крайних нод, пробуем их смещать
+            Node next = block.node; 
+            do
             {
                 distance--;
-                block.ChangeNode(next); // если в прошлом цикле позиция изменилась, обновляем данные ячейки
+                block.ChangeNode(next); 
 
 
-                Node possibleNode = GetNodeAtPosition(next.Pos + new Vector2(dir.x, dir.y * _coefficientCells)); // смотрим, существует ли вообще нода на +1 в направлении смещения
-                if (possibleNode != null) // нет? Проехали, оставили блок в покое
+                Node possibleNode = GetNodeAtPosition(next.Pos + new Vector2(dir.x, dir.y * _coefficientCells)); 
+                if (possibleNode != null) 
                 {
                     //if(possibleNode.occupiedBlock != null) { Debug.Log(_collision.CollisionResult(block, possibleNode.occupiedBlock, _maxOrederElenet)); }
-                    if (possibleNode.occupiedBlock != null && _collision.CollisionResult(block, possibleNode.occupiedBlock, _maxOrederElenet) && distance > 0) // коллизия есть?
+                    if (possibleNode.occupiedBlock != null && _collision.CollisionResult(block, possibleNode.occupiedBlock, _maxOrederElenet) && distance > 0) 
                     {
-                        //if(block is Stalker) { Debug.Log("есть коллизия"); }
-                        // !!!! запись для обработки столкновения
                         block.mergingBlock = possibleNode.occupiedBlock;
                         next = possibleNode;
                         collision = true;
                         block.ChangeNode(next);
                     }
 
-                    else if (possibleNode.occupiedBlock == null) { next = possibleNode; } // место уже занято? Нет - меняем NEXT и идём дальше
+                    else if (possibleNode.occupiedBlock == null) { next = possibleNode; } 
                 }
-            } while (next != block.node && distance > 0 && collision == false); // повторяем, пока не будет любого препядствия
+            } while (next != block.node && distance > 0 && collision == false); 
 
-            // тут можно чекать эффекты на блоках
 
-            if ((Vector2)block.transform.position != block.node.Pos) // если смещение есть, двигаем в конечную
+            if ((Vector2)block.transform.position != block.node.Pos) 
             {
                 if (block is Character)
                 {
@@ -274,7 +276,7 @@ public class GameManager : MonoBehaviour
                 block.transform.DOMove(block.node.Pos, _trevelBlockTime);
             }
 
-            seqence.OnComplete(() => // по завершению движения при коллизии, обрабаываем столкновение
+            seqence.OnComplete(() =>
             {
                 if(block.mergingBlock != null && block != null) { _collision.MergeBlocks(block.mergingBlock, block); }
                 if (block != null) { block.mergingBlock = null; }
@@ -442,7 +444,7 @@ public class GameManager : MonoBehaviour
 
         if(freeNodes.Count() == 1)
         {
-            Debug.Log("ноды кончились");
+            
         }
     }
 
@@ -492,8 +494,24 @@ public class GameManager : MonoBehaviour
 
     private void Lose()
     {
+        if (_isFree)
+        {
+            StorageItemFreeMode e = new StorageItemFreeMode();
+            e.Round = _configurator._lvlNumber;
+            storageService.Save(key, e);
+
+
+            /// test
+
+            /// storageService.Load<StorageItemFreeMode>(key, data => { Debug.Log($"Loaded. int : {e.Round}"); });
+        }
         Debug.Log("Lose");
-        //Invoke("DestroyScene", 1f);
+        Invoke("GoToMenu", 1f);
+    }
+
+    private void GoToMenu()
+    {
+        loader.LoadScene("MainMenu");
     }
 
     private void DestroyScene()
