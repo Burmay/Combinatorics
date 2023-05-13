@@ -9,7 +9,6 @@ public class FreeSceneConfig : SceneConfig
 
     public override string sceneName => SCENE_NAME;
 
-    // «десь создаютс€ все экземпл€ры классов дл€ конктерной сцены, списком
     public override Dictionary<Type, Interactor> CreateAllInteractors()
     {
         var interactorsRoll = new Dictionary<Type, Interactor>();

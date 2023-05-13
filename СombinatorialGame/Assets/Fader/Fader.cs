@@ -18,8 +18,8 @@ public class Fader : MonoBehaviour
         {
             if (_instance == null)
             {
-                var ptefab = Resources.Load<Fader>(FADER_PATH);
-                _instance = Instantiate(ptefab);
+                var prefab = Resources.Load<Fader>(FADER_PATH);
+                _instance = Instantiate(prefab);
                 DontDestroyOnLoad(_instance.gameObject);
             }
 

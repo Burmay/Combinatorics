@@ -6,6 +6,7 @@ TagManager:
   tags:
   - SceneLoader
   - LevelCount
+  - RecordsPanel
   layers:
   - Default
   - TransparentFX
