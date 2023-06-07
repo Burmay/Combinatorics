@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9019653305832474eac0d69a59d78499, type: 3}
+  m_Name: Prefabs
+  m_EditorClassIdentifier: 
+  fireOne: {fileID: 8559068416633545890, guid: f1fa6ecfa14ebd447a13bb46ac9a3bc2, type: 3}
+  fireTwo: {fileID: 7769354679249648628, guid: 488993d5c9acce849b96d95fa3986423, type: 3}
+  waterOne: {fileID: 1857490976737054772, guid: 4882bf54c05af8e4093afa714244c14d, type: 3}
+  waterTwo: {fileID: 8509908624720210448, guid: f095a325e79dabc4fa22d364b417f02a, type: 3}
+  stoneOne: {fileID: 1146692039735210028, guid: 770bd38c86bb43a4d9c7cbe1b25aa427, type: 3}
+  stoneTwo: {fileID: 3415733036223910363, guid: e625ffa9cc64de74cb60948d0a4a422a, type: 3}
+  steam: {fileID: 6598537542005909225, guid: 02ef9ee7dd8d99c49a35c6c3e44eb5c0, type: 3}
+  lava: {fileID: 1546137687693003352, guid: 994431c7b342e27488ef7da2b97b2c13, type: 3}
+  plant: {fileID: 1677612949899770163, guid: 613f1e7bc7c5f884781dd22c16c1eff9, type: 3}
+  player: {fileID: 9028734972248818491, guid: 16229bdca70081545a6ce6afb5d9db01, type: 3}
+  enemy: {fileID: 3878425175811258145, guid: 4ae591c330eb53644b94cd7e48929018, type: 3}
+  stalker: {fileID: 5306200401815183317, guid: c81172d1ab83d9645a776c1026a7552a, type: 3}
+  teleport: {fileID: 2888061008461680670, guid: 1a513cb3d2579074cbb4573707164be6, type: 3}
+  key: {fileID: 8121006801385980844, guid: c6906dc1cfe363d489e32b60fc1be6a8, type: 3}
+  floorOne: {fileID: 2110700425609721252, guid: 8d155bfe8620a8d49946163b575f0fa2, type: 3}
+  floorTwo: {fileID: 8309022657717808723, guid: 9d013568046f27c4caeb5877b35f434c, type: 3}
+  floorThree: {fileID: 6072607302785281210, guid: b99acf8c11e405e4c87dc83c55d774c2, type: 3}

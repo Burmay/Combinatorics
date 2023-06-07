@@ -6,8 +6,7 @@ using System;
 public class SceneBuilder : MonoBehaviour
 {
     private int _width, _height;
-    [SerializeField] private Node _nodePrefab1, _nodePrefab2, _nodePrefab3;
-    [SerializeField] private SpriteRenderer _boardPrefab;
+    private Node _nodePrefab1, _nodePrefab2, _nodePrefab3;
     [SerializeField] private float _coefficientCells;
     [SerializeField] private GameManager _manager;
     [SerializeField] private ProceduralSceneConfigurator _configurator;
@@ -15,8 +14,12 @@ public class SceneBuilder : MonoBehaviour
     private List<Node> _nodesList;
     private int _currentNodeIndex;
 
+    [SerializeField] private Prefabs prefabs;
+
     public List<Node> GenerateLvl()
     {
+        prefabs.GetPrefabs(this);
+
         _width = _configurator.GetWidth;
         _height = _configurator.GetHeight;
         SetEnviroment();
@@ -29,11 +32,18 @@ public class SceneBuilder : MonoBehaviour
         return _nodesList;
     }
 
+    public void SetPrefabs(Node node1, Node node2, Node node3)
+    {
+        _nodePrefab1 = node1;
+        _nodePrefab2 = node2;
+        _nodePrefab3 = node3;
+    }
+
     IEnumerator CreateField(float[,] fieldData)
     {
         while(_currentNodeIndex < _width * _height)
         {
-            yield return new WaitForSeconds(speedUnfoldingNodes); ; // скорость развёртки
+            yield return new WaitForSeconds(speedUnfoldingNodes);
             SetNode(fieldData);
         }
         if(_currentNodeIndex == _width * _height)
@@ -46,8 +56,6 @@ public class SceneBuilder : MonoBehaviour
     private void SetEnviroment()
     {
         Vector2 centerCoor = new Vector2((float)_width / 2 - 0.5f, (float)_height * _coefficientCells / 2 - 0.5f);
-        var board = Instantiate(_boardPrefab, centerCoor, Quaternion.identity);
-        board.size = new Vector2(_width, _height * _coefficientCells);
         Camera.main.orthographicSize = _width > _height ? _width : _height;
         Camera.main.transform.position = new Vector3(centerCoor.x, centerCoor.y, -10);
         Camera.main.backgroundColor = new Color(0.109803922f, 0.066666666f, 0.235294118f, 1f);

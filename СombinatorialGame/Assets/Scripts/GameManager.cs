@@ -7,13 +7,6 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] private Element _fireOnePrefab, _waterOnePrefab, _stoneOnePrefab, _fireTwoPrefab, _waterTwoPrefab, _stomeTwoPrefab, _lavaPrefab, _steamPrefab, _plantPrefab;
-    [SerializeField] private Player _playerPrefab;
-    [SerializeField] private Enemy _enemyPrefab;
-    [SerializeField] private Teleport _teleportPrefab;
-    [SerializeField] private Key _keyPrefab;
-    [SerializeField] private Stalker _stalkerPrefab;
-
     [SerializeField] private float _coefficientCells, _trevelBlockTime;
     [SerializeField] private SceneBuilder _sceneBuilder;
     [SerializeField] private CollisionHandler _collision;
@@ -25,6 +18,15 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int _maxOrederElenet;
 
     [SerializeField] private bool _isFree;
+
+    [SerializeField] private Prefabs prefabs;
+
+    private Element _fireOnePrefab, _waterOnePrefab, _stoneOnePrefab, _fireTwoPrefab, _waterTwoPrefab, _stoneTwoPrefab, _lavaPrefab, _steamPrefab, _plantPrefab;
+    private Player _playerPrefab;
+    private Enemy _enemyPrefab;
+    private Teleport _teleportPrefab;
+    private Key _keyPrefab;
+    private Stalker _stalkerPrefab;
 
     GameObject loaderTag;
     SceneLoader loader;
@@ -48,6 +50,8 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        prefabs.GetPrefabs(this);
+
         random = new System.Random();
         storageService = new JsonToFileStorageService();
         loaderTag = GameObject.FindWithTag("SceneLoader");
@@ -59,6 +63,25 @@ public class GameManager : MonoBehaviour
     public void SetProbabilityEl(float fire, float stone, float water)
     {
         _probabilityFireEl = fire; _probabilityStoneEl = stone; _probabilityWaterEl = water;
+    }
+
+    public void SetPrefabs(Element fireOne, Element fireTwo, Element waterOne, Element waterTwo, Element stoneOne, Element stoneTwo, Element steam, Element lava, Element plant, Player player, Enemy enemy, Key key, Teleport teleport, Stalker stalker)
+    {
+        _fireOnePrefab = fireOne;
+        _fireTwoPrefab = fireTwo;
+        _waterOnePrefab = waterOne;
+        _waterTwoPrefab = waterTwo;
+        _stoneOnePrefab = stoneOne;
+        _stoneTwoPrefab = stoneTwo;
+        _steamPrefab = steam;
+        _lavaPrefab = lava;
+        _plantPrefab = plant;
+
+        _playerPrefab = player;
+        _enemyPrefab = enemy;
+        _teleportPrefab = teleport;
+        _keyPrefab = key;
+        _stalkerPrefab = stalker;
     }
 
     private void Update()
@@ -349,7 +372,6 @@ public class GameManager : MonoBehaviour
 
     private void GenerateLvl()
     {
-        _collision.SetElementsPrefab(_fireOnePrefab, _waterOnePrefab, _stoneOnePrefab, _fireTwoPrefab, _waterTwoPrefab, _stomeTwoPrefab, _lavaPrefab, _steamPrefab, _plantPrefab);
         _round = 0;
 
         if (_blocksList == null)

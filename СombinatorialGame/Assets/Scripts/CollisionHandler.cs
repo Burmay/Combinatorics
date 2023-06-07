@@ -9,6 +9,13 @@ public class CollisionHandler : MonoBehaviour
     System.Random random = new System.Random();
     Teleport _teleport;
 
+    [SerializeField] private Prefabs prefabs;
+
+    private void Start()
+    {
+        prefabs.GetPrefabs(this);
+    }
+
     public void SetElementsPrefab(Element fire, Element water, Element stone, Element fireTwo, Element waterTwo, Element stoneTwo, Element lava, Element steam, Element plant)
     {
         _fireOnePrefab = fire;
@@ -27,8 +34,6 @@ public class CollisionHandler : MonoBehaviour
         _teleport = teleport;
     }
 
-    // Проверка, есть ли вообще столкновение
-
     public bool CollisionResult(Block incoming, Block standing, int maxOrderElement)
     {
         if (incoming is Element && standing is Element) { return CollisionElementsResult(incoming, standing, maxOrderElement); }
@@ -42,7 +47,7 @@ public class CollisionHandler : MonoBehaviour
         else if (standing is Element && !(incoming is Element)) { return CollisionUnitWithElement(incoming, standing); }
         else if (standing is Key && incoming is Player || standing is Player && incoming is Key) { return true; }
         else if (standing is Key && !(incoming is Player) || incoming is Key && !(standing is Player)) { return false; }
-        else { Debug.Log("Произошла странная коллизия " + incoming + " " + standing); return false; } // дебаг-строчка
+        else { Debug.Log("Not element " + incoming + " " + standing); return false; } 
     }
 
     private bool CollisionElementsResult(Block incoming, Block standing, int maxOrderElement)
@@ -95,7 +100,6 @@ public class CollisionHandler : MonoBehaviour
         return teleport.Condition;
     }
 
-    // Обработка коллизии - выбор сценария 
 
     public void MergeBlocks(Block standing, Block incoming)
     {
@@ -107,7 +111,6 @@ public class CollisionHandler : MonoBehaviour
         else { Debug.Log("Ошибка в определении сценария коллизии"); Debug.Log(standing + " и " + incoming); }
     }
 
-    // Определение резльтата столкновения двух элементов и спавн нового типа
 
     private void MegreElements(Element incoming, Element standing)
     {
@@ -156,7 +159,6 @@ public class CollisionHandler : MonoBehaviour
         else { return null; }
     }
 
-    // Определение резльтата столкновения двух Элемента и Юнита
 
     private void MergeElementWithUnit(Block standing, Block incoming)
     {
@@ -172,14 +174,12 @@ public class CollisionHandler : MonoBehaviour
         manager.RemoveBlock(element);
     }
 
-    // игрок и ключ
     private void MergePlayerWithKey(Block key)
     {
         manager.RemoveBlock(key);
         _teleport.Condition = true;
     }
 
-    // Результат столкновения врага с юнитом
     private void MergeUnit(Block standing, Block incoming)
     {
         Player player;
@@ -187,7 +187,6 @@ public class CollisionHandler : MonoBehaviour
         player.SubtractHP(int.MaxValue);
     }
 
-    // эффекты от столкновения с элементами
 
     private void WaterEffect(Character unit)
     {
@@ -210,7 +209,6 @@ public class CollisionHandler : MonoBehaviour
 
     private void SteamEffect(Character unit)
     {
-        // возврат в обратную сторону
         manager.ShiftForOne(unit, new Vector2(manager._lastMove.x * -1, manager._lastMove.y * -1));
     }
 

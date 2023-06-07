@@ -289,20 +289,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deea7db2efbb02742833a73b49759c74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _fireOnePrefab: {fileID: 8559068416633545890, guid: f1fa6ecfa14ebd447a13bb46ac9a3bc2, type: 3}
-  _waterOnePrefab: {fileID: 1857490976737054772, guid: 4882bf54c05af8e4093afa714244c14d, type: 3}
-  _stoneOnePrefab: {fileID: 1146692039735210028, guid: 770bd38c86bb43a4d9c7cbe1b25aa427, type: 3}
-  _fireTwoPrefab: {fileID: 7769354679249648628, guid: 488993d5c9acce849b96d95fa3986423, type: 3}
-  _waterTwoPrefab: {fileID: 8509908624720210448, guid: f095a325e79dabc4fa22d364b417f02a, type: 3}
-  _stomeTwoPrefab: {fileID: 3415733036223910363, guid: e625ffa9cc64de74cb60948d0a4a422a, type: 3}
-  _lavaPrefab: {fileID: 1546137687693003352, guid: 994431c7b342e27488ef7da2b97b2c13, type: 3}
-  _steamPrefab: {fileID: 6598537542005909225, guid: 02ef9ee7dd8d99c49a35c6c3e44eb5c0, type: 3}
-  _plantPrefab: {fileID: 1677612949899770163, guid: 613f1e7bc7c5f884781dd22c16c1eff9, type: 3}
-  _playerPrefab: {fileID: 9028734972248818491, guid: 16229bdca70081545a6ce6afb5d9db01, type: 3}
-  _enemyPrefab: {fileID: 3878425175811258145, guid: 4ae591c330eb53644b94cd7e48929018, type: 3}
-  _teleportPrefab: {fileID: 2888061008461680670, guid: 1a513cb3d2579074cbb4573707164be6, type: 3}
-  _keyPrefab: {fileID: 8121006801385980844, guid: c6906dc1cfe363d489e32b60fc1be6a8, type: 3}
-  _stalkerPrefab: {fileID: 5306200401815183317, guid: c81172d1ab83d9645a776c1026a7552a, type: 3}
   _coefficientCells: 0.87
   _trevelBlockTime: 0.5
   _sceneBuilder: {fileID: 639512020}
@@ -313,6 +299,7 @@ MonoBehaviour:
   _strokeLag: 1
   _maxOrederElenet: 2
   _isFree: 1
+  prefabs: {fileID: 11400000, guid: 2956a25ef2726c74e81c771a12e0a71c, type: 2}
   _state: 0
   _lastMove: {x: 0, y: 0}
 --- !u!4 &639512018
@@ -342,14 +329,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3eb63ea7923a844c9f93a8c33d9e3d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _nodePrefab1: {fileID: 2110700425609721252, guid: 8d155bfe8620a8d49946163b575f0fa2, type: 3}
-  _nodePrefab2: {fileID: 8309022657717808723, guid: 9d013568046f27c4caeb5877b35f434c, type: 3}
-  _nodePrefab3: {fileID: 6072607302785281210, guid: b99acf8c11e405e4c87dc83c55d774c2, type: 3}
-  _boardPrefab: {fileID: 86117150067520785, guid: aa8a2dba31d2032479534545a1b7f7e7, type: 3}
   _coefficientCells: 0.87
   _manager: {fileID: 639512017}
   _configurator: {fileID: 639512022}
   speedUnfoldingNodes: 0.03
+  prefabs: {fileID: 11400000, guid: 2956a25ef2726c74e81c771a12e0a71c, type: 2}
 --- !u!114 &639512021
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -363,6 +347,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   manager: {fileID: 639512017}
+  prefabs: {fileID: 11400000, guid: 2956a25ef2726c74e81c771a12e0a71c, type: 2}
 --- !u!114 &639512022
 MonoBehaviour:
   m_ObjectHideFlags: 0
