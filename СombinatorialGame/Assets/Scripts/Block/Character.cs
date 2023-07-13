@@ -14,7 +14,6 @@ public class Character : Block
         base.Init(manager);
         stun = false;
         return this;
-        // характеристики заложены, или выставляются руками?
     }
 
     public int HP => hp;
@@ -60,5 +59,10 @@ public class Character : Block
     protected virtual void Die()
     {
         manager.RemoveBlock(this);
+    }
+
+    public override void Destroy()
+    {
+        base.Destroy();
     }
 }

@@ -29,4 +29,9 @@ public class Player : Character
         base.Die();
         manager._state = GameState.Lose;
     }
+
+    public override void Destroy()
+    {
+        base.Destroy();
+    }
 }

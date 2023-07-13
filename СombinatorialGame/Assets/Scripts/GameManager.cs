@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -11,6 +12,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private SceneBuilder _sceneBuilder;
     [SerializeField] private CollisionHandler _collision;
     [SerializeField] private ProceduralSceneConfigurator _configurator;
+    [SerializeField] private LevelDataA1 _levelDataA1;
     [SerializeField] private Vector2 _playerStartPosition;
 
     [SerializeField] private int _elementsPerStroke;
@@ -18,6 +20,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int _maxOrederElenet;
 
     [SerializeField] private bool _isFree;
+    [SerializeField] private int _lvlNumber = 1;
 
     [SerializeField] private Prefabs prefabs;
 
@@ -159,7 +162,7 @@ public class GameManager : MonoBehaviour
 
                 if ((Vector2)block.transform.position != block.node.Pos) 
                 {
-                    block.transform.DOMove(block.node.Pos - direction / 2, _trevelBlockTime);
+                    DoMove(block, block.node.Pos - direction / 2);
                 }
             }
         }
@@ -210,7 +213,7 @@ public class GameManager : MonoBehaviour
                         Character character = block as Character;
                         character.Move();
                     }
-                    block.transform.DOMove(block.node.Pos, _trevelBlockTime);
+                    DoMove(block, block.node.Pos);
                 }
 
                 Vector2 movePoint = block.mergingBlock != null ? block.mergingBlock.node.Pos : block.node.Pos;
@@ -296,10 +299,10 @@ public class GameManager : MonoBehaviour
                     Character character = block as Character;
                     character.Move();
                 }
-                block.transform.DOMove(block.node.Pos, _trevelBlockTime);
+                DoMove(block, block.node.Pos);
             }
 
-            seqence.OnComplete(() =>
+            seqence.OnComplete(() =>    
             {
                 if(block.mergingBlock != null && block != null) { _collision.MergeBlocks(block.mergingBlock, block); }
                 if (block != null) { block.mergingBlock = null; }
@@ -309,6 +312,12 @@ public class GameManager : MonoBehaviour
             });
         }
     }
+
+    private void DoMove(Block block, Vector3 dir)
+    {
+        block.transform.DOMove(dir, _trevelBlockTime).SetEase(Ease.InOutCubic).SetLink(gameObject);
+    }
+
 
     private bool CheckPossibilityOfMove(Block block)
     {
@@ -385,7 +394,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-
+            _conditionExit = _levelDataA1.GetCondition(_lvlNumber);
         }
         _nodesList = _sceneBuilder.GenerateLvl();
         ChangeState(GameState.WatingInput);
@@ -403,10 +412,11 @@ public class GameManager : MonoBehaviour
         SpawnBlock(_playerPrefab, 1);
         SpawnBlock(_teleportPrefab, 1);
         if(_conditionExit == ConditionExitLvl.GetKey) { SpawnBlock(_keyPrefab, 1); }
-        if(_configurator.StalkerMode == true) { SpawnBlock(_stalkerPrefab, 1); }
+        if (_configurator.StalkerMode == true) { SpawnBlock(_stalkerPrefab, 1); }
         else { SpawnBlock(_enemyPrefab, _configurator.GetNumberEnemy); }
         SpawnRandomElement(_configurator.GetNumberElement);
     }
+
 
     private void SpawnBlock(Block blockPrefab, int amount)
     {
@@ -480,6 +490,7 @@ public class GameManager : MonoBehaviour
     public void RemoveBlock(Block block)
     {
         _blocksList.Remove(block);
+        block.Destroy();
         Destroy(block.gameObject);
     }
 
@@ -512,6 +523,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("Win");
         DestroyScene();
         ChangeState(GameState.GenerateLvl);
+        _lvlNumber++;
     }
 
     private void Lose()

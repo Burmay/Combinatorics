@@ -31,4 +31,9 @@ public class Block : MonoBehaviour
         mergingBlock = blockMergeWith;
         node.occupiedBlock = null;
     }
+
+    public virtual void Destroy()
+    {
+        Destroy(this.gameObject);
+    }
 }

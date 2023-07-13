@@ -9,7 +9,8 @@ public class ProceduralSceneConfigurator : MonoBehaviour
     public int _lvlNumber { private set; get; }
     private System.Random random;
     [SerializeField] public GameManager manager;
-    [SerializeField] private int _width, _height, _anchor, _downWard, _upWard, _numberElement, _numberEnemy;
+    private int _width, _height;
+    [SerializeField] private int _anchor, _downWard, _upWard, _numberElement, _numberEnemy;
     [SerializeField] private ConditionExitLvl _condition;
     [SerializeField] private bool _squareField, _fixSquareSize, _stalkerMode;
     [SerializeField] private float _probabilityFireEl, _probabilityStoneEl, _probabilityWaterEl;

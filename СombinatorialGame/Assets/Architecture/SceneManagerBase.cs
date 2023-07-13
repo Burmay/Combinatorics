@@ -19,7 +19,6 @@ public abstract class SceneManagerBase
 
     public abstract void InitScenesRoll();
 
-    // событие, активируемое после загрузки сцены. ѕрив€зать можно любые событи€
 
     public event Action<Scene> OnSceneLoadedEvent;
 

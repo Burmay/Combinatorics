@@ -8,17 +8,18 @@ public class SceneLoader : MonoBehaviour
 {
     private bool _isLoading;
 
-    private static SceneLoader _instance;
+    public static SceneLoader instance { get; private set; }
 
     private void Awake()
     {
-        if( _instance != null)
+        if( instance == null)
         {
-            Destroy(gameObject );
+            instance = this;
+            DontDestroyOnLoad(gameObject);
             return;
         }
-        _instance = this;
-        DontDestroyOnLoad(gameObject);
+
+        Destroy(this.gameObject);
     }
 
     public void LoadScene(string sceneName)

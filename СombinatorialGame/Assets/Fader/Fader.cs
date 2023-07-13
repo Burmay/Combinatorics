@@ -6,7 +6,7 @@ using UnityEngine;
 public class Fader : MonoBehaviour
 {
 
-    private const string FADER_PATH = "Fader";
+    private const string FADER_PATH = "Prefabs/Fader/Fader";
 
 
     [SerializeField] private Animator animator;

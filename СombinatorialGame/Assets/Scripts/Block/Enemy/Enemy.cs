@@ -15,4 +15,9 @@ public class Enemy : Character
         base.Init(manager);
         return this;
     }
+
+    public override void Destroy()
+    {
+        base.Destroy();
+    }
 }

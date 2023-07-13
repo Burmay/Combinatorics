@@ -5,23 +5,41 @@ using System;
 
 public class SceneBuilder : MonoBehaviour
 {
+    private Action stageIsSet;
+
+    [SerializeField] private bool isFree;
     private int _width, _height;
     private Node _nodePrefab1, _nodePrefab2, _nodePrefab3;
     [SerializeField] private float _coefficientCells;
     [SerializeField] private GameManager _manager;
     [SerializeField] private ProceduralSceneConfigurator _configurator;
+    [SerializeField] private LevelDataA1 _levelDataA1;
     [SerializeField] private float speedUnfoldingNodes;
+    [SerializeField] private float floorAnimatoinTime;
     private List<Node> _nodesList;
     private int _currentNodeIndex;
+    private int _numberLevel = 0;
+
 
     [SerializeField] private Prefabs prefabs;
 
     public List<Node> GenerateLvl()
     {
+        stageIsSet += EnvironmentSet;
+
         prefabs.GetPrefabs(this);
 
-        _width = _configurator.GetWidth;
-        _height = _configurator.GetHeight;
+        if (isFree)
+        {
+            _width = _configurator.GetWidth;
+            _height = _configurator.GetHeight;
+        }
+        else
+        {
+            _width = _levelDataA1.Width[_numberLevel];
+            _height = _levelDataA1.Height[_numberLevel];
+        }
+   
         SetEnviroment();
         float[,] fieldData = GenereteDataForField();
         if(_nodesList == null)
@@ -29,7 +47,9 @@ public class SceneBuilder : MonoBehaviour
             _nodesList = new List<Node>();
         }
         StartCoroutine(CreateField(fieldData));
+        _numberLevel++;
         return _nodesList;
+
     }
 
     public void SetPrefabs(Node node1, Node node2, Node node3)
@@ -48,9 +68,16 @@ public class SceneBuilder : MonoBehaviour
         }
         if(_currentNodeIndex == _width * _height)
         {
-            _manager.EnablingEnvironment();
-            StopCoroutine("CreateField");
+            yield return new WaitForSeconds(floorAnimatoinTime);
         }
+
+        StopCoroutine("CreateField");
+        stageIsSet?.Invoke();
+    }
+
+    void EnvironmentSet()
+    {
+        _manager.EnablingEnvironment();
     }
 
     private void SetEnviroment()
@@ -142,6 +169,6 @@ public class SceneBuilder : MonoBehaviour
 
     private void DestroyEnviroment()
     {
-
+        stageIsSet -= EnvironmentSet;
     }
 }
