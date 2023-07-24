@@ -6,7 +6,7 @@ public class Enemy : Character
 {
     protected override void Die()
     {
-        Debug.Log("Враг сдох");
+        Debug.Log("The enemy is dead");
         base.Die();
     }
 

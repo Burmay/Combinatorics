@@ -265,8 +265,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 639512018}
-  - component: {fileID: 639512022}
   - component: {fileID: 639512017}
+  - component: {fileID: 639512022}
   - component: {fileID: 639512020}
   - component: {fileID: 639512021}
   - component: {fileID: 639512023}
@@ -289,13 +289,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deea7db2efbb02742833a73b49759c74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _coefficientCells: 0.87
   _trevelBlockTime: 1
   _sceneBuilder: {fileID: 639512020}
   _collision: {fileID: 639512021}
   _configurator: {fileID: 639512022}
   _levelDataA1: {fileID: 0}
-  _playerStartPosition: {x: 0, y: 0}
   _elementsPerStroke: 1
   _strokeLag: 1
   _maxOrederElenet: 2
@@ -331,13 +329,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3eb63ea7923a844c9f93a8c33d9e3d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isFree: 1
+  _isFree: 0
   _coefficientCells: 0.87
   _manager: {fileID: 639512017}
-  _configurator: {fileID: 639512022}
-  _levelDataA1: {fileID: 0}
   speedUnfoldingNodes: 0.03
   floorAnimatoinTime: 0.75
+  _configurator: {fileID: 639512022}
+  _levelDataA1: {fileID: 0}
   prefabs: {fileID: 11400000, guid: 2956a25ef2726c74e81c771a12e0a71c, type: 2}
 --- !u!114 &639512021
 MonoBehaviour:
@@ -366,11 +364,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   manager: {fileID: 639512017}
-  _anchor: 10
+  _anchor: 3
   _downWard: 0
   _upWard: 2
-  _numberElement: 12
-  _numberEnemy: 5
+  _numberElement: 2
+  _numberEnemy: 1
   _condition: 0
   _squareField: 0
   _fixSquareSize: 0
@@ -378,6 +376,8 @@ MonoBehaviour:
   _probabilityFireEl: 1
   _probabilityStoneEl: 1
   _probabilityWaterEl: 1
+  ElementsPerStroke: 0
+  _probabilitySpawnElement: {x: 0, y: 0, z: 0}
 --- !u!114 &639512023
 MonoBehaviour:
   m_ObjectHideFlags: 0

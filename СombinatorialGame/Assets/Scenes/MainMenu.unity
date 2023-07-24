@@ -2009,7 +2009,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38269949b3cb91048aa6960c97ddd334, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sceneName: LevelPanel
+  sceneName: A1Company
 --- !u!1 &2092299632
 GameObject:
   m_ObjectHideFlags: 0

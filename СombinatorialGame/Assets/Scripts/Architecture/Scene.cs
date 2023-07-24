@@ -27,19 +27,14 @@ public class Scene
         repositoriesBase.CreateAllRepositories();
         yield return null;
 
-        Debug.Log("1. All interactors / repositories are created");
         interactorsBase.SendOnCreateToAllInteractors();
         repositoriesBase.SendOnCreateToAllRepository();
         yield return null;
-        Debug.Log("2. Actions in the creation are performed");
         interactorsBase.InitializeAllInteractors();
         repositoriesBase.InitializeAllRepository();
         yield return null;
-        Debug.Log("3. Interactors / repositories are initialize");
         interactorsBase.SendOnStartToAllInteractors();
-        Debug.Log("4. Interactors work");
         repositoriesBase.SendOnStartAllRepository();
-        Debug.Log("5. Repositories work");
 
     }
 

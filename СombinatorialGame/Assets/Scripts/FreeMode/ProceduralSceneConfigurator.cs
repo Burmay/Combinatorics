@@ -4,9 +4,8 @@ using UnityEngine;
 using System;
 using TMPro;
 
-public class ProceduralSceneConfigurator : MonoBehaviour
+public class ProceduralSceneConfigurator : LevelSettings, IData
 {
-    public int _lvlNumber { private set; get; }
     private System.Random random;
     [SerializeField] public GameManager manager;
     private int _width, _height;
@@ -14,15 +13,19 @@ public class ProceduralSceneConfigurator : MonoBehaviour
     [SerializeField] private ConditionExitLvl _condition;
     [SerializeField] private bool _squareField, _fixSquareSize, _stalkerMode;
     [SerializeField] private float _probabilityFireEl, _probabilityStoneEl, _probabilityWaterEl;
+    [SerializeField] private int ElementsPerStroke;
+    [SerializeField] private Vector3 _probabilitySpawnElement;
 
     private GameObject _levelCountTag;
     private TMP_Text _levelCount;
 
     public void Awake()
     {
-        _lvlNumber = 1;
+        base.LevelNumber = 1;
+        ElementsPerStroke = 1;
         random = new System.Random();
         _stalkerMode = false;
+        _probabilitySpawnElement = new Vector3(1, 1, 1);
 
         CreateFieldSize();
     }
@@ -56,23 +59,25 @@ public class ProceduralSceneConfigurator : MonoBehaviour
 
     public void UpLvl()
     {
-        _lvlNumber++;
-        _levelCount.text = _lvlNumber.ToString();
+        LevelNumber++;
+        _levelCount.text = LevelNumber.ToString();
         CreateFieldSize();
-        if(_lvlNumber % 3 == 0) _upWard++;
-        if(_lvlNumber % 5 == 0) _anchor++; _numberElement++;
-        if(_lvlNumber % 3 == 0) _numberEnemy++;
-        if(_lvlNumber == 5) _downWard--;
-        if (_lvlNumber % 10 == 0) _downWard--;
-        if(_stalkerMode == true && _lvlNumber == 2) { _stalkerMode = true; }
+        if(LevelNumber % 3 == 0) _upWard++; _numberEnemy++; ElementsPerStroke++;
+        if (LevelNumber % 5 == 0) _anchor++; _numberElement++;
+        if(LevelNumber == 5) _downWard--;
+        if (LevelNumber % 10 == 0) _downWard--;
+        if(_stalkerMode == true && LevelNumber == 2) { _stalkerMode = true; }
     }
 
-    public int GetNumberEnemy => _numberEnemy;
-    public int GetWidth => _width;
-    public int GetHeight => _height;
-    public int GetNumberElement => _numberElement;
-    public ConditionExitLvl GetConditionExit => _condition;
+    int IData.GetWidth() => _width;
+    int IData.GetHeight() => _height;
+    ConditionExitLvl IData.GetCondition() => _condition;
+    int IData.GetElementsPerStroke() => ElementsPerStroke;
+    Vector3 IData.GetProbabilityEl() => _probabilitySpawnElement;
     public bool StalkerMode => _stalkerMode;
+
+    public int GetNumberElement => _numberElement;
+    public int GetNumberEnemy => _numberEnemy;
 }
 
 public enum ConditionExitLvl

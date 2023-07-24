@@ -2,28 +2,37 @@ using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using TMPro;
+using TreeEditor;
+using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] private float _coefficientCells, _trevelBlockTime;
+    [SerializeField] private float _trevelBlockTime;
     [SerializeField] private SceneBuilder _sceneBuilder;
     [SerializeField] private CollisionHandler _collision;
     [SerializeField] private ProceduralSceneConfigurator _configurator;
     [SerializeField] private LevelDataA1 _levelDataA1;
-    [SerializeField] private Vector2 _playerStartPosition;
 
     [SerializeField] private int _elementsPerStroke;
     [SerializeField] private float _strokeLag;
     [SerializeField] private int _maxOrederElenet;
 
-    [SerializeField] private bool _isFree;
+    [SerializeField] public bool _isFree;
     [SerializeField] private int _lvlNumber = 1;
 
     [SerializeField] private Prefabs prefabs;
+    private const string FREE_SCENE_NAME = "FreeMode";
+    private const float _coefficientCells = 0.87f;
+    private StorageCompanyInteractor _StorageCompanyInteractor;
 
+    private IData data;
     private Element _fireOnePrefab, _waterOnePrefab, _stoneOnePrefab, _fireTwoPrefab, _waterTwoPrefab, _stoneTwoPrefab, _lavaPrefab, _steamPrefab, _plantPrefab;
     private Player _playerPrefab;
     private Enemy _enemyPrefab;
@@ -50,15 +59,70 @@ public class GameManager : MonoBehaviour
     private float _probabilityFireEl, _probabilityStoneEl, _probabilityWaterEl;
     private System.Random random;
 
+    private void Awake()
+    {
+        CheckSceneType();
+        RealizationIData();
+    }
 
     private void Start()
     {
         prefabs.GetPrefabs(this);
+        SetGameSettings();
 
         random = new System.Random();
         storageService = new JsonToFileStorageService();
         loaderTag = GameObject.FindWithTag("SceneLoader");
         loader = loaderTag.GetComponent<SceneLoader>();
+
+        Game.OnGameInitializedEvent += GetInteractors;
+        LevelDataA1.DataIsReady += GenerateLvl;
+    }
+
+
+    private void GetInteractors()
+    {
+        if (!_isFree) _StorageCompanyInteractor = Game.GetInteractor<StorageCompanyInteractor>();
+        _StorageCompanyInteractor.GetLink(this);
+        Game.OnGameInitializedEvent -= GetInteractors;
+    }
+
+    void SetGameSettings()
+    {
+        _elementsPerStroke = data.GetElementsPerStroke();
+        var prob = data.GetProbabilityEl();
+        _probabilityFireEl = prob.x;
+        _probabilityWaterEl = prob.y;
+        _probabilityStoneEl = prob.z;
+    }
+
+    public void SetLevel(StorageCompanyItem item)
+    {
+        _lvlNumber = item.MaxLevel + 1;
+    }
+
+    public void SetStartLevel()
+    {
+        _lvlNumber = 0;
+    }
+
+    void CheckSceneType()
+    {
+        var scene = SceneManager.GetActiveScene();
+        if (scene.name == FREE_SCENE_NAME) _isFree = true;
+        else _isFree = false;
+    }
+
+    private void RealizationIData()
+    {
+        if (_isFree)
+        {
+            data = _configurator;
+        }
+        else
+        {
+            data = _levelDataA1;
+        }
     }
 
     public Player SetPlayerLink { set { _player = value; } }
@@ -262,7 +326,6 @@ public class GameManager : MonoBehaviour
 
     public void ShiftForOne(Block block, Vector2 dir)
     {
-
         bool collision = false;
         var seqence = DOTween.Sequence();
         int distance = block.mobile + 1;
@@ -383,21 +446,18 @@ public class GameManager : MonoBehaviour
     {
         _round = 0;
 
+        if (CheckLastLevel()) return;
+
         if (_blocksList == null)
         {
             _blocksList = new List<Block>();
             _loadDataList = new List<LoadData>();
         }
-        if(_isFree == true)
-        {
-            _conditionExit = _configurator.GetConditionExit;
-        }
-        else
-        {
-            _conditionExit = _levelDataA1.GetCondition(_lvlNumber);
-        }
-        _nodesList = _sceneBuilder.GenerateLvl();
+
+        _conditionExit = data.GetCondition();
+        _nodesList = _sceneBuilder.GenerateLvl(_isFree);
         ChangeState(GameState.WatingInput);
+        LevelDataA1.DataIsReady -= GenerateLvl;
     }
 
     public ConditionExitLvl GetConditionExit(Teleport teleport)
@@ -409,12 +469,29 @@ public class GameManager : MonoBehaviour
 
     public void EnablingEnvironment()
     {
+        if(_isFree) EnviromentForFreeScene();
+        else { EnviromentForCompany(); }
+    }
+
+    private void EnviromentForFreeScene()
+    {
         SpawnBlock(_playerPrefab, 1);
         SpawnBlock(_teleportPrefab, 1);
-        if(_conditionExit == ConditionExitLvl.GetKey) { SpawnBlock(_keyPrefab, 1); }
+        if (_conditionExit == ConditionExitLvl.GetKey) { SpawnBlock(_keyPrefab, 1); }
         if (_configurator.StalkerMode == true) { SpawnBlock(_stalkerPrefab, 1); }
         else { SpawnBlock(_enemyPrefab, _configurator.GetNumberEnemy); }
         SpawnRandomElement(_configurator.GetNumberElement);
+    }
+
+    private void EnviromentForCompany()
+    {
+        SpawnBlockInSpecificPosition(_playerPrefab, _levelDataA1.GetPlayerPos());
+        SpawnBlockInSpecificPosition(_teleportPrefab, _levelDataA1.GetPortalPos());
+        if (_conditionExit == ConditionExitLvl.GetKey) { SpawnBlockInSpecificPosition(_keyPrefab, _levelDataA1.GetKeyPos()); }
+
+        if (_levelDataA1.GetStalker() != null) SpawnBlocksInSpecificPosition(_stalkerPrefab, _levelDataA1.GetStalker().StalkerPos, _levelDataA1.GetStalker().CountStalker);
+        else { SpawnBlocksInSpecificPosition(_enemyPrefab, _levelDataA1.GetEnemy().Pos, _levelDataA1.GetEnemy().CountEnemy); }
+        SpawnElement(_levelDataA1.GetFirstElements());
     }
 
 
@@ -430,6 +507,60 @@ public class GameManager : MonoBehaviour
 
             if(block is Player) { CloseRow(node); }
         }
+    }
+
+    private void SpawnBlocksInSpecificPosition(Block blockPrefab, Vector2[] position, int amount)
+    {
+        
+        for(int i = 0; i < amount; i++)
+        {
+            Vector2 exPos = Pinpoint(position[i]);
+            var node = _nodesList.Where(n => n.Pos == exPos);
+            InstansiateBlockInSpecPos(blockPrefab, node.First());
+        }
+    }
+
+    private void SpawnBlockInSpecificPosition(Block blockPrefab, Vector2 position)
+    {
+        Vector2 exPos = Pinpoint(position);
+        var node = _nodesList.Where(n => n.Pos == exPos);
+        InstansiateBlockInSpecPos(blockPrefab, node.First());
+    }
+
+    private void SpawnElement(LevelFirstElement levelFirst)
+    {
+        for (int i = 0; i < levelFirst.ElementCount; i++)
+        {
+            var node = _nodesList.Where(n => n.Pos == Pinpoint(levelFirst.ElementPos[i]));
+            if (levelFirst.Type[i] == ElementFirstType.fire) { InstansiateBlockInSpecPos(_fireOnePrefab, node.First()); }
+            else if (levelFirst.Type[i] == ElementFirstType.water) { InstansiateBlockInSpecPos(_waterOnePrefab, node.First()); }
+            else if (levelFirst.Type[i] == ElementFirstType.stone) { InstansiateBlockInSpecPos(_stoneOnePrefab, node.First()); }
+        }
+    }
+
+    private void InstansiateBlockInSpecPos(Block blockPrefab, Node node)
+    {
+        var block = Instantiate(blockPrefab, node.Pos, Quaternion.identity);
+        block.Init(this);
+        block.ChangeNode(node);
+        _blocksList.Add(block);
+
+        if (block is Player) { CloseRow(node); }
+    }
+
+    private Vector2 Pinpoint(Vector2 pos)
+    {
+        return new Vector2(pos.x, pos.y * _coefficientCells); 
+    }
+
+    private Vector2[] ConvertToVector2(Vector3[] vector3)
+    {
+        Vector2[] vector2 = new Vector2[vector3.Length];
+        for (int i = 0; i < vector3.Length; i++)
+        {
+            vector2[i] = new Vector2(vector3[i].x, vector3[i].y);
+        }
+        return vector2;
     }
 
     private void CloseRow(Node nodeToClose)
@@ -519,11 +650,25 @@ public class GameManager : MonoBehaviour
 
     public void Win()
     {
-        _configurator.UpLvl();
+        _lvlNumber++;
+        if (!_isFree)
+        {
+            if (CheckLastLevel()) return;
+            _levelDataA1.LevelUp();
+            _StorageCompanyInteractor.UpdateData(_lvlNumber);
+        }
+
+        SetGameSettings();
         Debug.Log("Win");
         DestroyScene();
         ChangeState(GameState.GenerateLvl);
-        _lvlNumber++;
+
+    }
+
+    private bool CheckLastLevel()
+    {
+        if (_levelDataA1.MaxLevelNumber < _lvlNumber) return true;
+        else return false;
     }
 
     private void Lose()
@@ -531,13 +676,8 @@ public class GameManager : MonoBehaviour
         if (_isFree)
         {
             StorageItemFreeMode e = new StorageItemFreeMode();
-            e.Round = _configurator._lvlNumber;
+            e.Round = _configurator.LevelNumber;
             storageService.Save(key, e);
-
-
-            /// test
-
-            /// storageService.Load<StorageItemFreeMode>(key, data => { Debug.Log($"Loaded. int : {e.Round}"); });
         }
         Debug.Log("Lose");
         Invoke("GoToMenu", 1f);
@@ -608,4 +748,21 @@ public enum GameState
     Win,
     Lose,
     PrevShift
+}
+
+public enum ElementFirstType
+{
+    fire,
+    water,
+    stone
+}
+
+public enum ElementTwoType
+{
+    fire,
+    water,
+    stone,
+    steam,
+    plant,
+    lava
 }

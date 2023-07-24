@@ -7,39 +7,36 @@ public class SceneBuilder : MonoBehaviour
 {
     private Action stageIsSet;
 
-    [SerializeField] private bool isFree;
+    [SerializeField] private bool _isFree;
     private int _width, _height;
     private Node _nodePrefab1, _nodePrefab2, _nodePrefab3;
     [SerializeField] private float _coefficientCells;
     [SerializeField] private GameManager _manager;
-    [SerializeField] private ProceduralSceneConfigurator _configurator;
-    [SerializeField] private LevelDataA1 _levelDataA1;
+    private IData data;
     [SerializeField] private float speedUnfoldingNodes;
     [SerializeField] private float floorAnimatoinTime;
     private List<Node> _nodesList;
     private int _currentNodeIndex;
     private int _numberLevel = 0;
 
+    [SerializeField] private ProceduralSceneConfigurator _configurator;
+    [SerializeField] private LevelDataA1 _levelDataA1;
+
 
     [SerializeField] private Prefabs prefabs;
 
-    public List<Node> GenerateLvl()
+    public List<Node> GenerateLvl(bool isFree)
     {
+        this._isFree = isFree;
+        if (_isFree) data = _configurator;
+        else data = _levelDataA1;
         stageIsSet += EnvironmentSet;
+
+        _width = data.GetWidth();
+        _height = data.GetHeight();
 
         prefabs.GetPrefabs(this);
 
-        if (isFree)
-        {
-            _width = _configurator.GetWidth;
-            _height = _configurator.GetHeight;
-        }
-        else
-        {
-            _width = _levelDataA1.Width[_numberLevel];
-            _height = _levelDataA1.Height[_numberLevel];
-        }
-   
         SetEnviroment();
         float[,] fieldData = GenereteDataForField();
         if(_nodesList == null)

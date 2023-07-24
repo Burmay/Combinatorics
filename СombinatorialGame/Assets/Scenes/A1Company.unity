@@ -123,6 +123,50 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &800424766
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 800424768}
+  - component: {fileID: 800424767}
+  m_Layer: 0
+  m_Name: SceneLoader
+  m_TagString: SceneLoader
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &800424767
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800424766}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0004ae1390abfc74797dcda2c166ff96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &800424768
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 800424766}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.21695134, y: 0.024855461, z: 6.305373}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1006937201
 GameObject:
   m_ObjectHideFlags: 0
@@ -133,8 +177,11 @@ GameObject:
   m_Component:
   - component: {fileID: 1006937203}
   - component: {fileID: 1006937202}
+  - component: {fileID: 1006937205}
+  - component: {fileID: 1006937204}
+  - component: {fileID: 1006937206}
   m_Layer: 0
-  m_Name: SceneManager
+  m_Name: Managers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -152,19 +199,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deea7db2efbb02742833a73b49759c74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _coefficientCells: 0
-  _trevelBlockTime: 0
-  _sceneBuilder: {fileID: 0}
-  _collision: {fileID: 0}
+  _trevelBlockTime: 0.75
+  _sceneBuilder: {fileID: 1006937204}
+  _collision: {fileID: 1006937205}
   _configurator: {fileID: 0}
-  _levelDataA1: {fileID: 0}
-  _playerStartPosition: {x: 0, y: 0}
+  _levelDataA1: {fileID: 1829500503}
   _elementsPerStroke: 0
   _strokeLag: 0
   _maxOrederElenet: 0
   _isFree: 0
   _lvlNumber: 0
-  prefabs: {fileID: 0}
+  prefabs: {fileID: 11400000, guid: 2956a25ef2726c74e81c771a12e0a71c, type: 2}
   _state: 0
   _lastMove: {x: 0, y: 0}
 --- !u!4 &1006937203
@@ -182,6 +227,52 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1006937204
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1006937201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3eb63ea7923a844c9f93a8c33d9e3d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _isFree: 0
+  _coefficientCells: 0.87
+  _manager: {fileID: 1006937202}
+  speedUnfoldingNodes: 0.1
+  floorAnimatoinTime: 0.1
+  _configurator: {fileID: 0}
+  _levelDataA1: {fileID: 1829500503}
+  prefabs: {fileID: 11400000, guid: 2956a25ef2726c74e81c771a12e0a71c, type: 2}
+--- !u!114 &1006937205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1006937201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 185436210027ce94c9965c421b8f6e7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  manager: {fileID: 1006937202}
+  prefabs: {fileID: 11400000, guid: 2956a25ef2726c74e81c771a12e0a71c, type: 2}
+--- !u!114 &1006937206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1006937201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2be161e3a0f7ed4408ac8968f9be2e3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1393903102
 GameObject:
   m_ObjectHideFlags: 0
@@ -295,6 +386,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cf72a8d139aa3d4299e4c5413e02343, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _maxLevelNumber: 0
+  _setLevelNumber: 0
 --- !u!4 &1829500504
 Transform:
   m_ObjectHideFlags: 0

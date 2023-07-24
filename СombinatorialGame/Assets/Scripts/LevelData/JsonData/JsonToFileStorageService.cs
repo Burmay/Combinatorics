@@ -5,6 +5,19 @@ using Newtonsoft.Json;
 
 public class JsonToFileStorageService : IStorageService
 {
+    private static JsonToFileStorageService _instance;
+    public JsonToFileStorageService instance
+    {
+        get
+        {
+            if(_instance == null)
+            {
+                _instance = this;
+            }
+            return _instance;   
+        }
+    }
+
     public void Save(string key, object data, Action<bool> callback = null)
     {
         string path = BuildPath(key);
@@ -21,7 +34,7 @@ public class JsonToFileStorageService : IStorageService
     public void Load<T>(string key, Action<T> callback)
     {
         string path = BuildPath(key);
-
+        
         using(StreamReader fileStream = new StreamReader(path))
         {
             var json = fileStream.ReadToEnd();
@@ -31,7 +44,7 @@ public class JsonToFileStorageService : IStorageService
         }
     }
 
-    private string BuildPath(string key)
+    public string BuildPath(string key)
     {
         return Path.Combine(Application.persistentDataPath, key) ;
     }
